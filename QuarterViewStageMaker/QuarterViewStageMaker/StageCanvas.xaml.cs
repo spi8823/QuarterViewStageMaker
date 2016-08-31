@@ -22,9 +22,31 @@ namespace QuarterViewStageMaker
     {
         public static readonly Size CanvasMargin = new Size(100, 200);
 
+        public static readonly RoutedEvent EditedEvent = EventManager.RegisterRoutedEvent("Edited", RoutingStrategy.Bubble, typeof(EventHandler<StageEditedEventArgs>), typeof(StageCanvas));
+
+        public event EventHandler Edited
+        {
+            add { AddHandler(EditedEvent, value); }
+            remove { RemoveHandler(EditedEvent, value); }
+        }
+
+        public class StageEditedEventArgs : RoutedEventArgs
+        {
+            public bool CanUndo;
+            public bool CanRedo;
+
+            public StageEditedEventArgs(RoutedEvent routedEvent, object source, bool canUndo, bool canRedo)
+                : base(routedEvent, source)
+            {
+                CanUndo = canUndo;
+                CanRedo = canRedo;
+            }
+        }
+
         public Size DefaultSize;
         public Stage Stage = null;
         public Maptip SelectedMaptip = null;
+        public bool Updated { get; private set; } = false;
 
         private List<Square> _SelectedSquares = new List<Square>();
         private List<Image> _ProvisionalImages = new List<Image>();
@@ -48,8 +70,10 @@ namespace QuarterViewStageMaker
         public void SetStage(Stage stage)
         {
             Stage = stage;
-            StageEditted();
+            StageEdited();
             DrawStage();
+
+            Updated = false;
         }
 
         public void DrawStage()
@@ -141,6 +165,7 @@ namespace QuarterViewStageMaker
             {
                 _DragMode = DragMode.None;
                 UnDrawProvisionalBlocks();
+                DrawAimLines(new List<Square>());
                 return;
             }
 
@@ -226,13 +251,13 @@ namespace QuarterViewStageMaker
             if (_DragMode == DragMode.Write)
             {
                 AddBlocks(_DragStartPoint, nowPoint);
-                StageEditted();
+                StageEdited();
                 UnselectSquares();
             }
             else if (_DragMode == DragMode.Delete)
             {
                 DeleteBlocks(_DragStartPoint, nowPoint);
-                StageEditted();
+                StageEdited();
                 UnselectSquares();
             }
             else if(_DragMode == DragMode.PartialSelect)
@@ -293,6 +318,98 @@ namespace QuarterViewStageMaker
             }
 
             DrawStage();
+        }
+
+        public void DeleteAllSelectedSquares()
+        {
+            if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
+                return;
+
+            var flag = false;
+            foreach (var square in _SelectedSquares)
+            {
+                if (square.Blocks.Count != 0)
+                {
+                    square.Blocks.Clear();
+                    flag = true;
+                }
+            }
+
+            if (flag)
+            {
+                StageEdited();
+                DrawStage();
+                DrawSelectedSquaresAimLine();
+            }
+        }
+
+        public void AddOnStep()
+        {
+            if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
+                return;
+
+            var flag = false;
+            foreach(var square in _SelectedSquares)
+            {
+                square.AddBlock(SelectedMaptip);
+                flag = true;
+            }
+
+            if (flag)
+            {
+                StageEdited();
+                DrawStage();
+                DrawSelectedSquaresAimLine();
+            }
+        }
+
+        public void DeleteOneStep()
+        {
+            if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
+                return;
+
+            var flag = false;
+            foreach (var square in _SelectedSquares)
+            {
+                if (square.Blocks.Count != 0)
+                {
+                    square.Blocks.RemoveAt(square.Blocks.Count - 1);
+                    flag = true;
+                }
+            }
+
+            if (flag)
+            {
+                StageEdited();
+                DrawStage();
+                DrawSelectedSquaresAimLine();
+            }
+        }
+
+        public void Smooth()
+        {
+            if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
+                return;
+
+            var flag = false;
+            
+            var height = _SelectedSquares.Min(square => square.Height);
+
+            foreach(var square in _SelectedSquares)
+            {
+                while(height < square.Height)
+                {
+                    square.Blocks.RemoveAt(square.Blocks.Count - 1);
+                    flag = true;
+                }
+            }
+
+            if (flag)
+            {
+                StageEdited();
+                DrawStage();
+                DrawSelectedSquaresAimLine();
+            }
         }
 
         private void UnDrawProvisionalBlocks()
@@ -446,6 +563,14 @@ namespace QuarterViewStageMaker
 
             DrawSelectedSquaresAimLine();
         }
+
+        public void SetTags(string tag)
+        {
+            foreach(var square in _SelectedSquares)
+            {
+                square.SetTag(tag);
+            }
+        }
     
         public void UnselectSquares()
         {
@@ -454,7 +579,7 @@ namespace QuarterViewStageMaker
             DrawSelectedSquaresAimLine();
         }
 
-        public void StageEditted()
+        public void StageEdited()
         {
             if(_NowStageJson != "")
             {
@@ -463,6 +588,23 @@ namespace QuarterViewStageMaker
             _NowStageJson = Stage.Serialize(Stage);
 
             _RedoStack = new Stack<string>();
+            Updated = true;
+
+            RaiseEvent(new StageEditedEventArgs(EditedEvent, this, _UndoStack.Count != 0, _RedoStack.Count != 0));
+        }
+
+        public void StageReverted()
+        {
+            if(_NowStageJson != "")
+            {
+                _UndoStack.Push(_NowStageJson);
+            }
+            _NowStageJson = Stage.Serialize(Stage);
+            _RedoStack = new Stack<string>();
+
+            Updated = false;
+
+            RaiseEvent(new StageEditedEventArgs(EditedEvent, this, _UndoStack.Count != 0, _RedoStack.Count != 0));
         }
 
         public void Undo()
@@ -479,8 +621,12 @@ namespace QuarterViewStageMaker
             {
                 square.Blocks.ForEach(block => b++);
             }
-            Console.WriteLine("Blocks : " + b);
             DrawStage();
+
+            if (_UndoStack.Count == 0)
+                Updated = false;
+
+            RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
         }
 
         public void Redo()
@@ -493,6 +639,9 @@ namespace QuarterViewStageMaker
             _UndoStack.Push(_NowStageJson);
 
             DrawStage();
+            Updated = true;
+
+            RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
         }
 
         public enum DragMode

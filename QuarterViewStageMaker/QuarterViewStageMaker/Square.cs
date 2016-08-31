@@ -25,6 +25,9 @@ namespace QuarterViewStageMaker
         [JsonProperty("Discription")]
         public string Discription { get; private set; }
 
+        [JsonProperty("Tag")]
+        public string Tag { get; private set; } = "";
+
         public Square(Stage stage, Point position, string discription)
         {
             Stage = stage;
@@ -44,12 +47,9 @@ namespace QuarterViewStageMaker
             Discription = discription;
         }
 
-        public void Draw(System.Windows.Controls.Canvas canvas)
+        public void SetTag(string tag)
         {
-            foreach(var block in Blocks)
-            {
-                block.Draw(canvas);
-            }
+            Tag = tag;
         }
     }
 }

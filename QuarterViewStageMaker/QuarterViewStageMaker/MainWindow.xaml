@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1300" Loaded="Window_Loaded">
     <Window.CommandBindings>
-        <CommandBinding Command="New" Executed="NewStage"/>
+        <CommandBinding Command="New" Executed="CreateStage"/>
         <CommandBinding Command="Save" Executed="SaveStage"/>
         <CommandBinding Command="Open" Executed="OpenProject"/>
         <CommandBinding Command="Undo" Executed="Undo"/>
@@ -59,9 +59,10 @@
                     <Button x:Name="SaveMaptipSettingButton" Width="100" Height="20" Content="変更を保存する"
                             VerticalAlignment="Bottom" Margin="0,0,0,10"
                             Click="SaveMaptipSettingButton_Click"/>
-                    <Button x:Name="PermeateMaptipButton" Width="60" Height="20" Content="透過処理"
+                    <Button x:Name="DeleteMaptipButton" Width="36" Height="20" Content="削除"
                             VerticalAlignment="Bottom" Margin="10,0,0,10"
-                            Click="PermeateMaptipButton_Click"/>
+                            VerticalContentAlignment="Center"
+                            Click="DeleteMaptipButton_Click"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
                     <Label Content="名前" Width="50" Height="30" 
@@ -98,10 +99,10 @@
                                   VerticalContentAlignment="Center"
                                   DisplayMemberPath="Name"
                                   SelectionChanged="StageSelectComboBox_SelectionChanged"/>
-                        <Button x:Name="BrowseStageButton" Content="参照する" Width="80" Height="20"
+                        <Button x:Name="CreateStageButton" Content="新規作成" Width="80" Height="20"
                                 VerticalAlignment="Bottom" Margin="10,0,0,5"
-                                Click="BrowseStageButton_Click"/>
-                        <Button x:Name="SaveStageSettingButton" Content="変更を反映する" Width="100" Height="20"
+                                Click="CreateStage"/>
+                        <Button x:Name="SaveStageSettingButton" Content="変更を反映する" Width="100" Height="20" IsEnabled="False"
                                 VerticalAlignment="Bottom" Margin="10,0,0,5"
                                 Click="SaveStageSettingButton_Click"/>
                     </StackPanel>
@@ -132,7 +133,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Label Content="説明" Width="50" Height="30" FontSize="16"
                                VerticalAlignment="Top"/>
-                        <TextBox x:Name="StageDiscriptionBox" Width="400" Height="60" FontSize="14" Text="asdfasdfasdf"
+                        <TextBox x:Name="StageDiscriptionBox" Width="400" Height="60" FontSize="14" Text=""
                                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,5,0,0"
                                  VerticalContentAlignment="Top"
                                  AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
@@ -145,18 +146,70 @@
                 <StackPanel Orientation="Horizontal">
                     <Label Content="ステージ編集" Width="100" Height="36" FontSize="18"
                            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,0,0,0"/>
-                    <Button x:Name="UndoButton" Content="戻る" Width="60" Height="24" FontSize="16"
-                            HorizontalAlignment="Left" Margin="10,0,0,0"
+                    <Button x:Name="UndoButton" Content="戻る" Width="50" Height="20" FontSize="12" IsEnabled="False"
+                            HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,7"
                             Click="Undo"/>
-                    <Button x:Name="RedoButton" Content="進む" Width="60" Height="24" FontSize="16"
-                            HorizontalAlignment="Left" Margin="10,0,0,0"
+                    <Button x:Name="RedoButton" Content="進む" Width="50" Height="20" FontSize="12" IsEnabled="False"
+                            HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,7"
+                            VerticalContentAlignment="Center"
                             Click="Redo"/>
+                    <Button x:Name="SaveStageButton" Content="保存する" Width="80" Height="24" FontSize="16"
+                            HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="15,0,0,5"
+                            Click="SaveStage"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal"></StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical">
+                            <Label Content="選択中のマスを" Margin="10,0,0,0"
+                                   VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="AddOneStepButton" Content="一段積む" Width="50" Margin="10,5,0,0"
+                                    Click="AddOneStepButton_Click"/>
+                            <Button x:Name="DeleteOneStepButton" Content="一段消す" Width="50" Margin="10,5,0,0"
+                                    Click="DeleteOneStepButton_Click"/>
+                        </StackPanel>
+                        <Button x:Name="SmoothSquaresButton"  Content="平均化する" 
+                                VerticalAlignment="Top" Margin="10,5,0,0"
+                                Click="SmoothSquaresButton_Click"/>
+                        <Button x:Name="DeleteAllSquaresButton" Content="すべて削除する"
+                                VerticalAlignment="Top" Margin="10,5,0,0"
+                                Click="DeleteAllSquaresButton_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Left" Margin="20,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="タグの編集"
+                               HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <ComboBox x:Name="SelectTagComboBox" Width="100"
+                                      HorizontalAlignment="Right" Margin="30,3,0,0"/>
+                            <Button x:Name="SetSquaresTagButton" Content="設定" Width="50"
+                                    HorizontalAlignment="Right" Margin="5,3,0,0"
+                                    Click="SetSquaresTagButton_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="AddTagTextBox" Width="100" Height="20"
+                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30,5,0,3"/>
+                            <Button x:Name="AddTagButton" Content="追加" Width="50"
+                                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,3"
+                                    Click="AddTagButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical">
+                        
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
 
             <ScrollViewer Grid.Column="2" Grid.Row="3" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="Gray">
-                <local:StageCanvas x:Name="StageCanvas" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <local:StageCanvas x:Name="StageCanvas" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                   local:StageCanvas.Edited="StageCanvas_Edited"/>
             </ScrollViewer>
         </Grid>
     </Grid>

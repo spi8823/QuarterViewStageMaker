@@ -16,8 +16,10 @@ namespace QuarterViewStageMaker
         public string StageFolder { get { return ProjectFolder + "\\" + "Stage"; } }
         public string MaptipFolder { get { return ProjectFolder + "\\" + "Maptip"; } }
         public string MaptipHeightsFileName { get { return MaptipFolder + "\\MaptipHeights.json"; } }
+        public string ProjectSettingFileName { get { return ProjectFolder + "\\Setting.json"; } }
         public List<Maptip> Maptips = new List<Maptip>();
         public List<Stage> Stages = new List<Stage>();
+        public ProjectSetting Setting { get; private set; }
 
         public Project(string projectFolder)
         {
@@ -32,8 +34,14 @@ namespace QuarterViewStageMaker
             if (!Directory.Exists(MaptipFolder))
                 Directory.CreateDirectory(MaptipFolder);
 
+            Setting = ProjectSetting.Load(ProjectSettingFileName);
             LoadMaptips();
             LoadStages();
+        }
+
+        public void SaveSetting()
+        {
+            ProjectSetting.Save(Setting, ProjectSettingFileName);
         }
 
         public void LoadStages()
@@ -48,65 +56,45 @@ namespace QuarterViewStageMaker
 
         public void LoadMaptips()
         {
-            Dictionary<string, double> heights = new Dictionary<string, double>();
-            try
-            {
-                using (StreamReader reader = new StreamReader(MaptipHeightsFileName))
-                {
-                    var json = reader.ReadToEnd();
-                    heights = JsonConvert.DeserializeObject<Dictionary<string, double>>(json);
-                }
-            }
-            catch { }
-
             Maptips = new List<Maptip>();
             foreach(var filename in Directory.GetFiles(MaptipFolder, "*.png"))
             {
                 var maptip = new Maptip(filename);
-                if (heights.ContainsKey(maptip.Name))
-                    maptip.SetHeight(heights[maptip.Name]);
+                if (Setting.MaptipHeights.ContainsKey(maptip.Name))
+                    maptip.SetHeight(Setting.MaptipHeights[maptip.Name]);
                 Maptips.Add(maptip);
             }
         }
 
         public Stage CreateStage(string name, int width, int depth)
         {
-            var stage = new Stage(this, name, width, depth);
+            int id = Stages.Count;
+            while (Stages.Any(s => s.ID == id))
+                id++;
+            var stage = new Stage(this, name, width, depth, id);
             Stages.Add(stage);
+            Stage.Save(stage);
 
             return stage;
         }
 
         public void ImportStage(string filename)
         {
+
         }
 
         public void SaveMaptipSetting(Maptip maptip, string name, double height)
         {
-            Dictionary<string, double> heights = new Dictionary<string, double>();
-            try
-            {
-                using (StreamReader reader = new StreamReader(MaptipHeightsFileName))
-                {
-                    var json = reader.ReadToEnd();
-                    heights = JsonConvert.DeserializeObject<Dictionary<string, double>>(json);
-                }
-            }
-            catch { }
+            if (Setting.MaptipHeights.ContainsKey(maptip.Name))
+                Setting.MaptipHeights.Remove(maptip.Name);
 
-            if (heights == null)
-                heights = new Dictionary<string, double>();
-
-            if (heights.ContainsKey(maptip.Name))
-                heights.Remove(maptip.Name);
-
-            heights.Add(name, height);
+            Setting.MaptipHeights.Add(name, height);
 
             try
             {
                 using (StreamWriter writer = new StreamWriter(MaptipHeightsFileName, false, Encoding.UTF8))
                 {
-                    var json = JsonConvert.SerializeObject(heights, Formatting.Indented);
+                    var json = JsonConvert.SerializeObject(Setting.MaptipHeights, Formatting.Indented);
                     writer.Write(json);
                 }
             }
@@ -114,6 +102,8 @@ namespace QuarterViewStageMaker
 
             maptip.SetName(name);
             maptip.SetHeight(height);
+
+            ProjectSetting.Save(Setting, ProjectSettingFileName);
         }
 
         public Maptip GetMaptip(string Name)
@@ -173,6 +163,66 @@ namespace QuarterViewStageMaker
 
                 maptips.Add(new Maptip(fileName));
             }
+        }
+
+    }
+
+    [JsonObject()]
+    public class ProjectSetting
+    {
+        [JsonProperty("MaptipHeights")]
+        public Dictionary<string, double> MaptipHeights { get; set; }
+
+        [JsonProperty("Tags")]
+        public List<string> Tags { get; set; }
+
+        public ProjectSetting()
+        {
+            MaptipHeights = new Dictionary<string, double>();
+            Tags = new List<string>();
+        }
+
+        public ProjectSetting(Dictionary<string, double> maptipheights, List<string> tags)
+        {
+            MaptipHeights = maptipheights;
+            Tags = tags;
+        }
+
+        public static ProjectSetting Load(string filename)
+        {
+            string json = "";
+            try
+            {
+                using (StreamReader reader = new StreamReader(filename, Encoding.UTF8))
+                {
+                    json = reader.ReadToEnd();
+                }
+            }
+            catch { }
+
+            if (string.IsNullOrWhiteSpace(json))
+                return new ProjectSetting();
+
+            try
+            {
+                return JsonConvert.DeserializeObject<ProjectSetting>(json);
+            }
+            catch
+            {
+                return new ProjectSetting();
+            }
+        }
+
+        public static void Save(ProjectSetting setting, string filename)
+        {
+            string json = JsonConvert.SerializeObject(setting);
+
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(filename, false, Encoding.UTF8))
+                    writer.Write(json);
+            }
+            catch { }
         }
     }
 }

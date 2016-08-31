@@ -28,7 +28,10 @@ namespace QuarterViewStageMaker
         [JsonProperty("Discription")]
         public string Discription { get; private set; } = "";
 
-        public Stage(Project project, string name, int width = 16, int depth = 16)
+        [JsonProperty("ID")]
+        public int ID { get; private set; } = 0;
+
+        public Stage(Project project, string name, int width, int depth, int id)
         {
             Project = project;
 
@@ -40,6 +43,8 @@ namespace QuarterViewStageMaker
             for (var i = 0; i < Width; i++)
                 for (var j = 0; j < Depth; j++)
                     Squares[i, j] = new Square(this, new Point(i, j), "");
+
+            ID = id;
         }
 
         public void SetSize(int width, int depth)
@@ -103,12 +108,13 @@ namespace QuarterViewStageMaker
         public static Stage Deserialize(Project project, string json)
         {
             dynamic stageData = JsonConvert.DeserializeObject(json);
-            var stage = new Stage(project, (string)stageData.Name.Value, (int)stageData.Width.Value, (int)stageData.Depth.Value);
+            var stage = new Stage(project, (string)stageData.Name.Value, (int)stageData.Width.Value, (int)stageData.Depth.Value, (int)stageData.ID.Value);
             foreach (dynamic squareLine in stageData.Squares)
                 foreach (dynamic squareData in squareLine)
                 {
                     dynamic position = squareData.Position;
                     var square = new Square(stage, new Point((double)position.X.Value, (double)position.Y.Value, (double)position.Z.Value), (string)squareData.Discription.Value);
+                    square.SetTag((string)squareData.Tag.Value);
                     foreach (dynamic blockData in squareData.Blocks)
                     {
                         position = blockData.Position;

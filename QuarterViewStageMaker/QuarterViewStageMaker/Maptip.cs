@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Drawing;
-using OpenCvSharp;
 
 namespace QuarterViewStageMaker
 {

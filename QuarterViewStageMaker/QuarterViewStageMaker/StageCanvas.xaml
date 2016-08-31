@@ -8,7 +8,7 @@
              Background="Aquamarine"
              Loaded="StageCanvas_Loaded">
     <Grid>
-        <Canvas x:Name="Canvas" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Yellow" 
+        <Canvas x:Name="Canvas" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White" 
                 MouseDown="Canvas_MouseDown" 
                 MouseMove="Canvas_MouseMove" 
                 MouseUp="Canvas_MouseUp"

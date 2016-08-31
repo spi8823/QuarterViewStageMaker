@@ -27,23 +27,11 @@ namespace QuarterViewStageMaker
         {
             Square = square;
             Position = position;
-            Maptip = maptip;
+
+            Maptip = maptip ?? null;
 
             _Image = new Image();
-            _Image.Source = Maptip.Image;
-        }
-
-        public void Draw(Canvas canvas)
-        {
-            if (!canvas.Children.Contains(_Image))
-                canvas.Children.Add(_Image);
-
-            var relativePoint = Position.ToRelativePoint();
-            _Image.Margin = new System.Windows.Thickness(
-                relativePoint.X + 50 - _Image.RenderSize.Width / 2, 
-                canvas.Height - relativePoint.Y - _Image.RenderSize.Height + 50, 
-                canvas.Width - relativePoint.X - _Image.RenderSize.Width / 2, 
-                relativePoint.Y + 50);
+            _Image.Source = Maptip?.Image ?? new System.Windows.Media.Imaging.BitmapImage();
         }
     }
 }
