@@ -53,5 +53,11 @@ namespace QuarterViewStageMaker
         public void Permeate()
         {
         }
+
+        public void DeleteFile()
+        {
+            Image = null;
+            File.Delete(ImageFileName);
+        }
     }
 }

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:QuarterViewStageMaker"
         xmlns:ewt="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1300" Loaded="Window_Loaded">
+        Title="MainWindow" Height="800" Width="1000" Loaded="Window_Loaded">
     <Window.CommandBindings>
         <CommandBinding Command="New" Executed="CreateStage"/>
         <CommandBinding Command="Save" Executed="SaveStage"/>
@@ -18,10 +18,20 @@
         <KeyBinding Command="Undo" Key="Z"/>
         <KeyBinding Command="Redo" Key="Y"/>
     </Window.InputBindings>
-    <Grid>
-        <Grid x:Name="MainWindowGrid" ShowGridLines="True" >
+    <StackPanel Orientation="Vertical">
+        <Menu x:Name="Menu" Grid.ColumnSpan="4" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="Auto" Width="Auto">
+            <MenuItem Header="Project" Width="Auto" Height="Auto">
+                <MenuItem Header="プロジェクトを作る" HorizontalAlignment="Left" Width="200" Click="NewProject"/>
+                <MenuItem Header="プロジェクトを開く" HorizontalAlignment="Left" Width="200" Click="OpenProject"/>
+                <MenuItem Header="素材を読み込む" HorizontalAlignment="Left" Width="200" Click="ImportMaptips" />
+                <MenuItem Header="素材を分割して読み込む" HorizontalAlignment="Left" Width="200" Click="ImportSlicedMaptip" />
+            </MenuItem>
+            <MenuItem Header="Help" Width="Auto">
+                <MenuItem Header="License" Width="Auto" Click="ShowLicenseWindow"/>
+            </MenuItem>
+        </Menu>
+        <Grid x:Name="MainWindowGrid" ShowGridLines="False">
             <Grid.RowDefinitions>
-                <RowDefinition Height="19"/>
                 <RowDefinition Height="120"/>
                 <RowDefinition Height="120"/>
                 <RowDefinition Height="480"/>
@@ -31,23 +41,15 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="233"/>
                 <ColumnDefinition Width="720"/>
-                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="20"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Menu x:Name="menu" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="18" Width="34">
-                <MenuItem Header="Project" Width="34">
-                    <MenuItem Header="プロジェクトを作る" HorizontalAlignment="Left" Width="200" Click="NewProject"/>
-                    <MenuItem Header="プロジェクトを開く" HorizontalAlignment="Left" Width="200" Click="OpenProject"/>
-                    <MenuItem Header="素材を読み込む" HorizontalAlignment="Left" Width="200" Click="ImportMaptips" />
-                    <MenuItem Header="素材を分割して読み込む" HorizontalAlignment="Left" Width="200" Click="ImportSlicedMaptip" />
-                </MenuItem>
-            </Menu>
 
-            <StackPanel Grid.Row="1" Grid.Column="1">
+            <StackPanel Grid.Row="0" Grid.Column="1">
             </StackPanel>
 
             <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="0,0,0,0" 
-                        Grid.Row="2" Grid.RowSpan="1" 
+                        Grid.Row="1" Grid.RowSpan="1" 
                         VerticalAlignment="Stretch" Width="Auto">
                 <StackPanel Orientation="Horizontal">
                     <Border BorderThickness="1" BorderBrush="Black"
@@ -83,14 +85,14 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Row="3" Grid.Column="1">
+            <StackPanel Grid.Row="2" Grid.Column="1" >
                 <Label x:Name="MaptipListLabel" Content="マップチップ一覧" Width="223" Height="40" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Bottom" FontFamily="Meiryo UI" FontSize="16"/>
-                <ScrollViewer x:Name="MaptipListViewer" Width="233" Height="440" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" >
+                <ScrollViewer x:Name="MaptipListViewer" Width="233" Height="440" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" BorderBrush="Black" BorderThickness="1">
                     <Canvas x:Name="MaptipListCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#FFBBAAAA" />
                 </ScrollViewer>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2">
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="10,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="ステージ基本設定" Height="40" FontSize="20" VerticalContentAlignment="Center"/>
@@ -142,7 +144,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="2">
+            <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="2">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="ステージ編集" Width="100" Height="36" FontSize="18"
                            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,0,0,0"/>
@@ -207,10 +209,10 @@
                 </StackPanel>
             </StackPanel>
 
-            <ScrollViewer Grid.Column="2" Grid.Row="3" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="Gray">
+            <ScrollViewer Grid.Column="2" Grid.Row="2" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="Gray">
                 <local:StageCanvas x:Name="StageCanvas" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                    local:StageCanvas.Edited="StageCanvas_Edited"/>
             </ScrollViewer>
         </Grid>
-    </Grid>
+    </StackPanel>
 </Window>

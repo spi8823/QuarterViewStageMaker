@@ -169,6 +169,8 @@ namespace QuarterViewStageMaker
                 Canvas.SetLeft(button, (i % 6) * MaptipSelectButton.Size.Width);
                 Canvas.SetTop(button, (i / 6) * MaptipSelectButton.Size.Height);
             }
+
+            MaptipListCanvas.UpdateLayout();
         }
 
         public void MaptipSelected(object sender, EventArgs e)
@@ -317,7 +319,7 @@ namespace QuarterViewStageMaker
                 return;
 
             Project.Maptips.Remove(SelectedMaptip);
-            File.Delete(SelectedMaptip.ImageFileName);
+            SelectedMaptip.DeleteFile();
             SelectedMaptip = null;
             ShowMaptipList();
             ShowMaptipData(null);
@@ -366,6 +368,12 @@ namespace QuarterViewStageMaker
         {
             UndoButton.IsEnabled = e.CanUndo;
             RedoButton.IsEnabled = e.CanRedo;
+        }
+
+        private void ShowLicenseWindow(object sender, RoutedEventArgs e)
+        {
+            var window = new LicenseWindow();
+            window.ShowDialog();
         }
     }
 }
