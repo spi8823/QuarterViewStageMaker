@@ -220,11 +220,6 @@ namespace QuarterViewStageMaker
             DeleteMaptipButton.IsEnabled = true;
         }
         
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         public void SaveStage(object sender, EventArgs e)
         {
             if (Stage == null)
@@ -356,7 +351,7 @@ namespace QuarterViewStageMaker
 
         private void AddOneStepButton_Click(object sender, RoutedEventArgs e)
         {
-            StageCanvas.AddOnStep();
+            StageCanvas.AddOneStep();
         }
 
         private void DeleteOneStepButton_Click(object sender, RoutedEventArgs e)
@@ -374,6 +369,26 @@ namespace QuarterViewStageMaker
         {
             var window = new LicenseWindow();
             window.ShowDialog();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (StageCanvas.Updated)
+            {
+                var result = MessageBox.Show("ステージが編集されています。\n変更を保存しますか？", "確認", MessageBoxButton.YesNoCancel);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Stage.Save(Stage);
+                }
+                else if (result == MessageBoxResult.No)
+                {
+                }
+                else if (result == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
         }
     }
 }

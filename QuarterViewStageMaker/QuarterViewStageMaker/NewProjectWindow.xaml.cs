@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Reactive.Bindings;
 
 /*
@@ -66,6 +67,15 @@ namespace QuarterViewStageMaker
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+            dialog.DefaultDirectory = App.StartupFolder;
+
+            var result = dialog.ShowDialog(this);
         }
     }
 }

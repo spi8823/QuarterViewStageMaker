@@ -90,9 +90,7 @@ namespace QuarterViewStageMaker
             Canvas.Height = Height;
 
             Canvas.Children.Clear();
-            foreach (var image in _ProvisionalImages)
-                Canvas.Children.Add(image);
-
+            
             for (var i = 0; i <= Stage.Width; i++)
             {
                 var start = new Point(i, 0).ToCanvasPosition(Canvas);
@@ -133,7 +131,7 @@ namespace QuarterViewStageMaker
             {
                 foreach (var block in square.Blocks)
                 {
-                    AddMaptip(block.Maptip, block.Position);
+                    AddMaptip(block);
                 }
             }
 
@@ -150,6 +148,22 @@ namespace QuarterViewStageMaker
             Canvas.SetLeft(image, drawPoint.X - maptip.ImageWidth / 2);
             Canvas.SetBottom(image, Canvas.Height - drawPoint.Y);
             Panel.SetZIndex(image, drawPoint.RawZ);
+        }
+
+        public void AddMaptip(Block block)
+        {
+            var image = block.Image;
+            Canvas.Children.Add(image);
+
+            if (block.IsImageInitialized)
+                return;
+
+            var drawPoint = block.Position.ToCanvasPosition(Canvas);
+            Canvas.SetLeft(image, drawPoint.X - block.Maptip.ImageWidth / 2);
+            Canvas.SetBottom(image, Canvas.Height - drawPoint.Y);
+            Panel.SetZIndex(image, drawPoint.RawZ);
+
+            block.IsImageInitialized = true;
         }
 
         private Point _DragStartPoint = null;
@@ -273,6 +287,7 @@ namespace QuarterViewStageMaker
                 DrawAimLines(new List<Square> { Stage.Squares[nowPoint.RawX, nowPoint.RawY] });
             else
                 DrawAimLines(new List<Square>());
+
             _DragMode = DragMode.None;
             UnDrawProvisionalBlocks();
         }
@@ -291,8 +306,8 @@ namespace QuarterViewStageMaker
                     if (j < 0 || Stage.Depth <= j)
                         continue;
 
-                    AddMaptip(SelectedMaptip, new Point(i, j, Stage.Squares[i, j].Height));
-                    Stage.Squares[i, j].AddBlock(SelectedMaptip);
+                    var block = Stage.Squares[i, j].AddBlock(SelectedMaptip);
+                    AddMaptip(block);
                 }
             }
         }
@@ -313,11 +328,15 @@ namespace QuarterViewStageMaker
 
                     var square = Stage.Squares[i, j];
                     if (square.Blocks.Count != 0)
-                        square.Blocks.RemoveAt(square.Blocks.Count - 1);
+                    {
+                        var block = square.Blocks[square.Blocks.Count - 1];
+                        Canvas.Children.Remove(block.Image);
+                        square.Blocks.Remove(block);
+                    }
                 }
             }
 
-            DrawStage();
+            //DrawStage();
         }
 
         public void DeleteAllSelectedSquares()
@@ -330,6 +349,8 @@ namespace QuarterViewStageMaker
             {
                 if (square.Blocks.Count != 0)
                 {
+                    foreach (var block in square.Blocks)
+                        Canvas.Children.Remove(block.Image);
                     square.Blocks.Clear();
                     flag = true;
                 }
@@ -338,12 +359,12 @@ namespace QuarterViewStageMaker
             if (flag)
             {
                 StageEdited();
-                DrawStage();
+                //DrawStage();
                 DrawSelectedSquaresAimLine();
             }
         }
 
-        public void AddOnStep()
+        public void AddOneStep()
         {
             if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
                 return;
@@ -351,14 +372,15 @@ namespace QuarterViewStageMaker
             var flag = false;
             foreach(var square in _SelectedSquares)
             {
-                square.AddBlock(SelectedMaptip);
+                var block = square.AddBlock(SelectedMaptip);
+                AddMaptip(block);
                 flag = true;
             }
 
             if (flag)
             {
                 StageEdited();
-                DrawStage();
+                //DrawStage();
                 DrawSelectedSquaresAimLine();
             }
         }
@@ -373,7 +395,9 @@ namespace QuarterViewStageMaker
             {
                 if (square.Blocks.Count != 0)
                 {
-                    square.Blocks.RemoveAt(square.Blocks.Count - 1);
+                    var block = square.Blocks[square.Blocks.Count - 1];
+                    Canvas.Children.Remove(block.Image);
+                    square.Blocks.Remove(block);
                     flag = true;
                 }
             }
@@ -381,7 +405,7 @@ namespace QuarterViewStageMaker
             if (flag)
             {
                 StageEdited();
-                DrawStage();
+                //DrawStage();
                 DrawSelectedSquaresAimLine();
             }
         }
@@ -399,7 +423,9 @@ namespace QuarterViewStageMaker
             {
                 while(height < square.Height)
                 {
-                    square.Blocks.RemoveAt(square.Blocks.Count - 1);
+                    var block = square.Blocks[square.Blocks.Count - 1];
+                    Canvas.Children.Remove(block.Image);
+                    square.Blocks.Remove(block);
                     flag = true;
                 }
             }
@@ -407,7 +433,7 @@ namespace QuarterViewStageMaker
             if (flag)
             {
                 StageEdited();
-                DrawStage();
+                //DrawStage();
                 DrawSelectedSquaresAimLine();
             }
         }

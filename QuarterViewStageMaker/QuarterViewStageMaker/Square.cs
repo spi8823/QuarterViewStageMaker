@@ -59,10 +59,12 @@ namespace QuarterViewStageMaker
             Discription = discription;
         }
 
-        public void AddBlock(Maptip maptip)
+        public Block AddBlock(Maptip maptip)
         {
             var block = new Block(this, new Point(Position.X, Position.Y, Height), maptip);
             Blocks.Add(block);
+
+            return block;
         }
 
         public void SetDiscription(string discription)

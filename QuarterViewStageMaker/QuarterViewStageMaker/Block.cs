@@ -44,7 +44,9 @@ namespace QuarterViewStageMaker
         public Point Position;
 
         [JsonIgnore()]
-        private Image _Image;
+        public Image Image;
+        [JsonIgnore()]
+        public bool IsImageInitialized = false;
 
         public Block(Square square, Point position, Maptip maptip)
         {
@@ -53,8 +55,8 @@ namespace QuarterViewStageMaker
 
             Maptip = maptip ?? null;
 
-            _Image = new Image();
-            _Image.Source = Maptip?.Image ?? new System.Windows.Media.Imaging.BitmapImage();
+            Image = new Image();
+            Image.Source = Maptip?.Image ?? new System.Windows.Media.Imaging.BitmapImage();
         }
     }
 }
