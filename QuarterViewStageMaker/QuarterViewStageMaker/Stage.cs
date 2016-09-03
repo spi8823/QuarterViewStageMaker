@@ -37,8 +37,14 @@ namespace QuarterViewStageMaker
         [JsonIgnore()]
         public Project Project;
 
+        [JsonProperty("ID")]
+        public int ID { get; private set; } = 0;
+
         [JsonProperty("Name")]
         public string Name { get; set; } = "";
+
+        [JsonProperty("Discription")]
+        public string Discription { get; private set; } = "";
 
         [JsonProperty("Width")]
         public int Width { get; private set; }
@@ -48,11 +54,8 @@ namespace QuarterViewStageMaker
         [JsonProperty("Squares")]
         public Square[,] Squares { get; private set; } = null;
 
-        [JsonProperty("Discription")]
-        public string Discription { get; private set; } = "";
-
-        [JsonProperty("ID")]
-        public int ID { get; private set; } = 0;
+        [JsonIgnore()]
+        public string StageFileName { get { return Project.StageFolder + "\\" + Name + ".stage"; } }
 
         public Stage(Project project, string name, int width, int depth, int id)
         {
@@ -121,8 +124,7 @@ namespace QuarterViewStageMaker
         {
             string json = Serialize(stage);
 
-            var filename = stage.Project.StageFolder + "\\" + stage.Name + ".stage";
-            using (StreamWriter writer = new StreamWriter(filename, false, Encoding.UTF8))
+            using (StreamWriter writer = new StreamWriter(stage.StageFileName, false, Encoding.UTF8))
             {
                 writer.Write(json);
             }

@@ -223,6 +223,9 @@ namespace QuarterViewStageMaker
         /// <param name="stage"></param>
         private void SelectStage(Stage stage)
         {
+            if (stage == null)
+                return;
+
             Stage = stage;
             StageBufferJson = Stage.Serialize(Stage);
             StageNameBox.Text = Stage.Name;
@@ -361,10 +364,19 @@ namespace QuarterViewStageMaker
         /// <param name="e"></param>
         private void SaveStageSettingButton_Click(object sender, EventArgs e)
         {
+            File.Delete(Stage.StageFileName);
+            var stage = Stage.Deserialize(Project, StageBufferJson);
+            stage.Name = StageNameBox.Text;
+            Stage.SetSize(StageWidthUpDown.Value ?? Stage.Width, StageDepthUpDown.Value ?? Stage.Depth);
+            Stage.Save(stage);
+
             Stage.Name = StageNameBox.Text;
             Stage.SetSize(StageWidthUpDown.Value ?? Stage.Width, StageDepthUpDown.Value ?? Stage.Depth);
+            StageSelectComboBox.ItemsSource = null;
+            StageSelectComboBox.ItemsSource = Project.Stages;
+            StageSelectComboBox.UpdateLayout();
             SaveStageSettingButton.IsEnabled = false;
-            StageCanvas.StageEdited();
+            //StageCanvas.StageEdited();
             StageCanvas.DrawStage();
         }
 
