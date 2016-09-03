@@ -292,6 +292,12 @@ namespace QuarterViewStageMaker
             UnDrawProvisionalBlocks();
         }
 
+        /// <summary>
+        /// ステージにブロックを追加する
+        /// 範囲は引数で指定された点から点への矩形部分
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
         private void AddBlocks(Point start, Point end)
         {
             if (Stage == null || SelectedMaptip == null)
@@ -312,6 +318,11 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// 指定された点から点への矩形部分のブロックを一段削除する
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
         private void DeleteBlocks(Point start, Point end)
         {
             if (Stage == null)
@@ -339,6 +350,9 @@ namespace QuarterViewStageMaker
             //DrawStage();
         }
 
+        /// <summary>
+        /// 選択中のマスのブロックをすべて削除する
+        /// </summary>
         public void DeleteAllSelectedSquares()
         {
             if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
@@ -364,6 +378,9 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// 選択中のマスに一段ずつブロックを追加する
+        /// </summary>
         public void AddOneStep()
         {
             if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
@@ -385,6 +402,9 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// 選択中のマスから一段ずつブロックを削除する
+        /// </summary>
         public void DeleteOneStep()
         {
             if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
@@ -410,6 +430,9 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// 選択中のマスの高さを揃える（低いほうに）
+        /// </summary>
         public void Smooth()
         {
             if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
@@ -438,14 +461,11 @@ namespace QuarterViewStageMaker
             }
         }
 
-        private void UnDrawProvisionalBlocks()
-        {
-            foreach (var image in _ProvisionalImages)
-                Canvas.Children.Remove(image);
-
-            _ProvisionalImages = new List<Image>();
-        }
-
+        /// <summary>
+        /// 追加するブロックを仮表示する
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
         private void DrawProvisionalBlocks(Point start, Point end)
         {
             if (Stage == null || SelectedMaptip == null)
@@ -474,6 +494,21 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// 仮表示中のブロックを削除する
+        /// </summary>
+        private void UnDrawProvisionalBlocks()
+        {
+            foreach (var image in _ProvisionalImages)
+                Canvas.Children.Remove(image);
+
+            _ProvisionalImages = new List<Image>();
+        }
+
+        /// <summary>
+        /// 操作の対象となるマスに目印を表示
+        /// </summary>
+        /// <param name="squares"></param>
         public void DrawAimLines(List<Square> squares)
         {
             foreach(var line in _AimLines)
@@ -522,6 +557,9 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// 選択中のマスに目印を表示
+        /// </summary>
         public void DrawSelectedSquaresAimLine()
         {
             foreach (var line in _SelectedSquaresAimLines)
@@ -569,6 +607,12 @@ namespace QuarterViewStageMaker
             }
         }
 
+        /// <summary>
+        /// マスを選択する
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="partial">部分選択するかどうか</param>
         public void SelectSquares(Point start, Point end, bool partial = false)
         {
             if (!partial)
@@ -589,15 +633,10 @@ namespace QuarterViewStageMaker
 
             DrawSelectedSquaresAimLine();
         }
-
-        public void SetTags(string tag)
-        {
-            foreach(var square in _SelectedSquares)
-            {
-                square.SetTag(tag);
-            }
-        }
     
+        /// <summary>
+        /// 選択を解除する
+        /// </summary>
         public void UnselectSquares()
         {
             _SelectedSquares = new List<Square>();
@@ -605,6 +644,22 @@ namespace QuarterViewStageMaker
             DrawSelectedSquaresAimLine();
         }
 
+        /// <summary>
+        /// 選択中のマスにタグをつける
+        /// </summary>
+        /// <param name="tag"></param>
+        public void SetTags(string tag)
+        {
+            foreach(var square in _SelectedSquares)
+            {
+                square.SetTag(tag);
+            }
+        }
+
+        /// <summary>
+        /// ステージが変更されたときに実行する
+        /// アンドゥとかリドゥのための処理
+        /// </summary>
         public void StageEdited()
         {
             if(_NowStageJson != "")
@@ -619,6 +674,9 @@ namespace QuarterViewStageMaker
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, _UndoStack.Count != 0, _RedoStack.Count != 0));
         }
 
+        /// <summary>
+        /// ステージが保存された状態に戻されたときに実行する処理
+        /// </summary>
         public void StageReverted()
         {
             if(_NowStageJson != "")
@@ -633,6 +691,9 @@ namespace QuarterViewStageMaker
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, _UndoStack.Count != 0, _RedoStack.Count != 0));
         }
 
+        /// <summary>
+        /// アンドゥする
+        /// </summary>
         public void Undo()
         {
             if (_UndoStack.Count == 0)
@@ -655,6 +716,9 @@ namespace QuarterViewStageMaker
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
         }
 
+        /// <summary>
+        /// リドゥする
+        /// </summary>
         public void Redo()
         {
             if (_RedoStack.Count == 0)
