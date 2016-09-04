@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:QuarterViewStageMaker"
         xmlns:ewt="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1000" 
+        Title="MainWindow" Height="800" Width="1250" 
         Loaded="Window_Loaded" Closing="Window_Closing">
     <Window.CommandBindings>
         <CommandBinding Command="New" Executed="CreateStage"/>
@@ -22,10 +22,10 @@
     <StackPanel Orientation="Vertical">
         <Menu x:Name="Menu" Grid.ColumnSpan="4" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="Auto" Width="Auto">
             <MenuItem Header="Project" Width="Auto" Height="Auto">
-                <MenuItem Header="プロジェクトを作る" HorizontalAlignment="Left" Width="200" Click="NewProject"/>
-                <MenuItem Header="プロジェクトを開く" HorizontalAlignment="Left" Width="200" Click="OpenProject"/>
-                <MenuItem Header="素材を読み込む" HorizontalAlignment="Left" Width="200" Click="ImportMaptips" />
-                <MenuItem Header="素材を分割して読み込む" HorizontalAlignment="Left" Width="200" Click="ImportSlicedMaptip" />
+                <MenuItem Header="プロジェクトを作る" HorizontalAlignment="Left" Width="Auto" Click="NewProject"/>
+                <MenuItem Header="プロジェクトを開く" HorizontalAlignment="Left" Width="Auto" Click="OpenProject"/>
+                <MenuItem Header="素材を読み込む" HorizontalAlignment="Left" Width="Auto" Click="ImportMaptips" />
+                <MenuItem Header="素材を分割して読み込む" HorizontalAlignment="Left" Width="Auto" Click="ImportSlicedMaptip"/>
             </MenuItem>
             <MenuItem Header="Help" Width="Auto">
                 <MenuItem Header="License" Width="Auto" Click="ShowLicenseWindow"/>
@@ -42,7 +42,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="233"/>
                 <ColumnDefinition Width="720"/>
-                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="240"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
@@ -212,8 +213,20 @@
 
             <ScrollViewer Grid.Column="2" Grid.Row="2" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="Gray">
                 <local:StageCanvas x:Name="StageCanvas" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                   local:StageCanvas.Edited="StageCanvas_Edited"/>
+                                   local:StageCanvas.Edited="StageCanvas_Edited" local:StageCanvas.SquareSelected="StageCanvas_SquareSelected" />
             </ScrollViewer>
+
+            <StackPanel Grid.Row="0" Grid.Column="4" Grid.RowSpan="3" Width="Auto" Height="Auto" Orientation="Vertical"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
+                <Label Content="選択中のマス" FontSize="20"/>
+                <ScrollViewer x:Name="SquareInformationPanelListViewer" Width="Auto" Height="681"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0"
+                              HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                    <StackPanel x:Name="SquareInformationPanelList" Width="Auto" Height="Auto"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
+                    </StackPanel>
+                </ScrollViewer>
+            </StackPanel>
         </Grid>
     </StackPanel>
 </Window>

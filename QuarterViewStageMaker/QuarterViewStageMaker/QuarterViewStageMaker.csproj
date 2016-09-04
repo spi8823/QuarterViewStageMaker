@@ -144,6 +144,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BlockSettingPanel.xaml.cs">
+      <DependentUpon>BlockSettingPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LicenseWindow.xaml.cs">
       <DependentUpon>LicenseWindow.xaml</DependentUpon>
     </Compile>
@@ -154,9 +157,16 @@
       <DependentUpon>NewStageWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Square.cs" />
+    <Compile Include="SquareSettingPanel.xaml.cs">
+      <DependentUpon>SquareSettingPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="StageCanvas.xaml.cs">
       <DependentUpon>StageCanvas.xaml</DependentUpon>
     </Compile>
+    <Page Include="BlockSettingPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="LicenseWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -183,6 +193,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="NewStageWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SquareSettingPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

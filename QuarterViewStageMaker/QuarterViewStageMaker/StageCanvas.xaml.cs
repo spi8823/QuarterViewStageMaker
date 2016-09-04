@@ -23,11 +23,18 @@ namespace QuarterViewStageMaker
         public static readonly Size CanvasMargin = new Size(100, 200);
 
         public static readonly RoutedEvent EditedEvent = EventManager.RegisterRoutedEvent("Edited", RoutingStrategy.Bubble, typeof(EventHandler<StageEditedEventArgs>), typeof(StageCanvas));
+        public static readonly RoutedEvent SquareSelectedEvent = EventManager.RegisterRoutedEvent("SquareSelected", RoutingStrategy.Bubble, typeof(EventHandler<SquareSelectedEventArgs>), typeof(StageCanvas));
 
         public event EventHandler Edited
         {
             add { AddHandler(EditedEvent, value); }
             remove { RemoveHandler(EditedEvent, value); }
+        }
+
+        public event EventHandler SquareSelected
+        {
+            add { AddHandler(SquareSelectedEvent, value); }
+            remove { RemoveHandler(SquareSelectedEvent, value); }
         }
 
         public class StageEditedEventArgs : RoutedEventArgs
@@ -40,6 +47,17 @@ namespace QuarterViewStageMaker
             {
                 CanUndo = canUndo;
                 CanRedo = canRedo;
+            }
+        }
+
+        public class SquareSelectedEventArgs : RoutedEventArgs
+        {
+            public List<Square> SelectedSquares;
+
+            public SquareSelectedEventArgs(RoutedEvent routedEvent, object source, List<Square> squares)
+                :base(routedEvent, source)
+            {
+                SelectedSquares = squares;
             }
         }
 
@@ -407,7 +425,7 @@ namespace QuarterViewStageMaker
         /// </summary>
         public void DeleteOneStep()
         {
-            if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
+            if (Stage == null || _SelectedSquares == null)
                 return;
 
             var flag = false;
@@ -632,6 +650,8 @@ namespace QuarterViewStageMaker
             }
 
             DrawSelectedSquaresAimLine();
+
+            RaiseEvent(new SquareSelectedEventArgs(SquareSelectedEvent, this, _SelectedSquares));
         }
     
         /// <summary>
@@ -642,6 +662,8 @@ namespace QuarterViewStageMaker
             _SelectedSquares = new List<Square>();
 
             DrawSelectedSquaresAimLine();
+
+            RaiseEvent(new SquareSelectedEventArgs(SquareSelectedEvent, this, _SelectedSquares));
         }
 
         /// <summary>

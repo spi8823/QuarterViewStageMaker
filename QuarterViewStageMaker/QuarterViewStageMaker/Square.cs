@@ -42,14 +42,14 @@ namespace QuarterViewStageMaker
         [JsonProperty("Height")]
         public double Height { get { return Blocks.Sum(block => block.Maptip.Height); } }
 
-        [JsonProperty("Blocks")]
-        public List<Block> Blocks { get; private set; }
-
         [JsonProperty("Discription")]
-        public string Discription { get; private set; }
+        public string Discription { get; set; }
 
         [JsonProperty("Tag")]
         public string Tag { get; private set; } = "";
+
+        [JsonProperty("Blocks")]
+        public List<Block> Blocks { get; private set; }
 
         public Square(Stage stage, Point position, string discription)
         {

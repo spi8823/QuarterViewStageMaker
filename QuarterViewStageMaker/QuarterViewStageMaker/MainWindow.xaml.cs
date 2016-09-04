@@ -423,6 +423,11 @@ namespace QuarterViewStageMaker
         {
             if (Stage != null)
                 StageCanvas.Undo();
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -434,6 +439,11 @@ namespace QuarterViewStageMaker
         {
             if (Stage != null)
                 StageCanvas.Redo();
+
+            foreach(SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -463,6 +473,11 @@ namespace QuarterViewStageMaker
         private void SetSquaresTagButton_Click(object sender, RoutedEventArgs e)
         {
             StageCanvas.SetTags((string)SelectTagComboBox.SelectedItem);
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -473,6 +488,11 @@ namespace QuarterViewStageMaker
         private void DeleteAllSquaresButton_Click(object sender, RoutedEventArgs e)
         {
             StageCanvas.DeleteAllSelectedSquares();
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -483,6 +503,11 @@ namespace QuarterViewStageMaker
         private void SmoothSquaresButton_Click(object sender, RoutedEventArgs e)
         {
             StageCanvas.Smooth();
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -493,6 +518,11 @@ namespace QuarterViewStageMaker
         private void AddOneStepButton_Click(object sender, RoutedEventArgs e)
         {
             StageCanvas.AddOneStep();
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -503,6 +533,11 @@ namespace QuarterViewStageMaker
         private void DeleteOneStepButton_Click(object sender, RoutedEventArgs e)
         {
             StageCanvas.DeleteOneStep();
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
 
         /// <summary>
@@ -514,6 +549,11 @@ namespace QuarterViewStageMaker
         {
             UndoButton.IsEnabled = e.CanUndo;
             RedoButton.IsEnabled = e.CanRedo;
+
+            foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
+            {
+                panel.Square_PropertyChanged(this, null);
+            }
         }
         #endregion
 
@@ -526,6 +566,17 @@ namespace QuarterViewStageMaker
         {
             var window = new LicenseWindow();
             window.ShowDialog();
+        }
+
+        private void StageCanvas_SquareSelected(object sender, StageCanvas.SquareSelectedEventArgs e)
+        {
+            SquareInformationPanelList.Children.Clear();
+            
+            foreach(var square in e.SelectedSquares)
+            {
+                var panel = new SquareSettingPanel(square);
+                SquareInformationPanelList.Children.Add(panel);
+            }
         }
     }
 }
