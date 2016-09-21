@@ -22,6 +22,7 @@ namespace QuarterViewStageMaker
     {
         public static readonly Size CanvasMargin = new Size(100, 200);
 
+        #region Event
         public static readonly RoutedEvent EditedEvent = EventManager.RegisterRoutedEvent("Edited", RoutingStrategy.Bubble, typeof(EventHandler<StageEditedEventArgs>), typeof(StageCanvas));
         public static readonly RoutedEvent SquareSelectedEvent = EventManager.RegisterRoutedEvent("SquareSelected", RoutingStrategy.Bubble, typeof(EventHandler<SquareSelectedEventArgs>), typeof(StageCanvas));
 
@@ -60,11 +61,13 @@ namespace QuarterViewStageMaker
                 SelectedSquares = squares;
             }
         }
+        #endregion
 
         public Size DefaultSize;
         public Stage Stage = null;
         public Maptip SelectedMaptip = null;
-        public bool Updated { get; private set; } = false;
+        public bool IsReversed { get; private set; } = false;
+        public bool Updated { get { return _UndoStack.Count != 0; } }
 
         private List<Square> _SelectedSquares = new List<Square>();
         private List<Image> _ProvisionalImages = new List<Image>();
@@ -91,7 +94,8 @@ namespace QuarterViewStageMaker
             StageEdited();
             DrawStage();
 
-            Updated = false;
+            _UndoStack = new Stack<string>();
+            _RedoStack = new Stack<string>();
         }
 
         public void DrawStage()
@@ -156,18 +160,6 @@ namespace QuarterViewStageMaker
             Cursor = Cursors.Arrow;
         }
 
-        public void AddMaptip(Maptip maptip, Point position)
-        {
-            var image = new Image();
-            image.Source = maptip.Image;
-            Canvas.Children.Add(image);
-
-            var drawPoint = position.ToCanvasPosition(Canvas);
-            Canvas.SetLeft(image, drawPoint.X - maptip.ImageWidth / 2);
-            Canvas.SetBottom(image, Canvas.Height - drawPoint.Y);
-            Panel.SetZIndex(image, drawPoint.RawZ);
-        }
-
         public void AddMaptip(Block block)
         {
             var image = block.Image;
@@ -176,7 +168,11 @@ namespace QuarterViewStageMaker
             if (block.IsImageInitialized)
                 return;
 
-            var drawPoint = block.Position.ToCanvasPosition(Canvas);
+            Point drawPoint;
+            if (!IsReversed)
+                drawPoint = block.Position.ToCanvasPosition(Canvas);
+            else
+                drawPoint = new Point(Stage.Width - block.Position.X - 1, Stage.Depth - block.Position.Y - 1, block.Position.Z).ToCanvasPosition(Canvas);
             Canvas.SetLeft(image, drawPoint.X - block.Maptip.ImageWidth / 2);
             Canvas.SetBottom(image, Canvas.Height - drawPoint.Y);
             Panel.SetZIndex(image, drawPoint.RawZ);
@@ -238,7 +234,10 @@ namespace QuarterViewStageMaker
             if (_DragMode == DragMode.None)
             {
                 if (Stage.DoesContainsPoint(nowPoint))
-                    DrawAimLines(new List<Square> { Stage.Squares[nowPoint.RawX, nowPoint.RawY] });
+                    if (!IsReversed)
+                        DrawAimLines(new List<Square> { Stage.Squares[nowPoint.RawX, nowPoint.RawY] });
+                    else
+                        DrawAimLines(new List<Square> { Stage.Squares[Stage.Width - nowPoint.RawX - 1, Stage.Depth - nowPoint.RawY - 1] });
                 else
                     DrawAimLines(new List<Square>());
                 return;
@@ -260,7 +259,10 @@ namespace QuarterViewStageMaker
                 {
                     for (var j = Math.Max(0, Math.Min(_DragStartPoint.RawY, nowPoint.RawY)); j <= Math.Min(Stage.Depth - 1, Math.Max(_DragStartPoint.RawY, nowPoint.RawY)); j++)
                     {
-                        squares.Add(Stage.Squares[i, j]);
+                        if (!IsReversed)
+                            squares.Add(Stage.Squares[i, j]);
+                        else
+                            squares.Add(Stage.Squares[Stage.Width - i - 1, Stage.Depth - j - 1]);
                     }
                 }
                 DrawAimLines(squares);
@@ -283,13 +285,11 @@ namespace QuarterViewStageMaker
             if (_DragMode == DragMode.Write)
             {
                 AddBlocks(_DragStartPoint, nowPoint);
-                StageEdited();
                 UnselectSquares();
             }
             else if (_DragMode == DragMode.Delete)
             {
                 DeleteBlocks(_DragStartPoint, nowPoint);
-                StageEdited();
                 UnselectSquares();
             }
             else if(_DragMode == DragMode.PartialSelect)
@@ -302,7 +302,10 @@ namespace QuarterViewStageMaker
             }
 
             if (Stage.DoesContainsPoint(nowPoint))
-                DrawAimLines(new List<Square> { Stage.Squares[nowPoint.RawX, nowPoint.RawY] });
+                if (!IsReversed)
+                    DrawAimLines(new List<Square> { Stage.Squares[nowPoint.RawX, nowPoint.RawY] });
+                else
+                    DrawAimLines(new List<Square> { Stage.Squares[Stage.Width - nowPoint.RawX - 1, Stage.Depth - nowPoint.RawY - 1] });
             else
                 DrawAimLines(new List<Square>());
 
@@ -330,10 +333,16 @@ namespace QuarterViewStageMaker
                     if (j < 0 || Stage.Depth <= j)
                         continue;
 
-                    var block = Stage.Squares[i, j].AddBlock(SelectedMaptip);
+                    Block block;
+                    if (!IsReversed)
+                        block = Stage.Squares[i, j].AddBlock(SelectedMaptip);
+                    else
+                        block = Stage.Squares[Stage.Width - i - 1, Stage.Depth - j - 1].AddBlock(SelectedMaptip);
                     AddMaptip(block);
                 }
             }
+
+            StageEdited();
         }
 
         /// <summary>
@@ -346,6 +355,8 @@ namespace QuarterViewStageMaker
             if (Stage == null)
                 return;
 
+            var flag = false;
+
             for (var i = Math.Min(start.RawX, end.RawX); i <= Math.Max(start.RawX, end.RawX); i++)
             {
                 if (i < 0 || Stage.Width <= i)
@@ -355,15 +366,24 @@ namespace QuarterViewStageMaker
                     if (j < 0 || Stage.Depth <= j)
                         continue;
 
-                    var square = Stage.Squares[i, j];
+                    Square square;
+                    if (!IsReversed)
+                        square = Stage.Squares[i, j];
+                    else
+                        square = Stage.Squares[Stage.Width - i - 1, Stage.Depth - j - 1];
                     if (square.Blocks.Count != 0)
                     {
                         var block = square.Blocks[square.Blocks.Count - 1];
                         Canvas.Children.Remove(block.Image);
                         square.Blocks.Remove(block);
+
+                        flag = true;
                     }
                 }
             }
+
+            if (flag)
+                StageEdited();
 
             //DrawStage();
         }
@@ -498,7 +518,11 @@ namespace QuarterViewStageMaker
                     if (j < 0 || Stage.Depth <= j)
                         continue;
 
-                    var drawPoint = new Point(i, j, Stage.Squares[i, j].Height).ToCanvasPosition(Canvas);
+                    Point drawPoint;
+                    if (!IsReversed)
+                        drawPoint = new Point(i, j, Stage.Squares[i, j].Height).ToCanvasPosition(Canvas);
+                    else
+                        drawPoint = new Point(i, j, Stage.Squares[Stage.Width - i - 1, Stage.Depth - j - 1].Height).ToCanvasPosition(Canvas);
                     var image = new Image();
                     image.Source = SelectedMaptip.Image;
                     Canvas.Children.Add(image);
@@ -557,8 +581,16 @@ namespace QuarterViewStageMaker
                 {
                     lines[i] = new Line();
                     var line = lines[i];
-                    var start = startPoints[i].ToCanvasPosition(Canvas);
-                    var end = endPoints[i].ToCanvasPosition(Canvas);
+                    Point start;
+                    if (!IsReversed)
+                        start = startPoints[i].ToCanvasPosition(Canvas);
+                    else
+                        start = new Point(Stage.Width - startPoints[i].X, Stage.Depth - startPoints[i].Y, startPoints[i].Z).ToCanvasPosition(Canvas);
+                    Point end;
+                    if (!IsReversed)
+                        end = endPoints[i].ToCanvasPosition(Canvas);
+                    else
+                        end = new Point(Stage.Width - endPoints[i].X, Stage.Depth - endPoints[i].Y, endPoints[i].Z).ToCanvasPosition(Canvas);
                     line.X1 = start.RawX;
                     line.Y1 = start.RawY;
                     line.X2 = end.RawX;
@@ -607,8 +639,16 @@ namespace QuarterViewStageMaker
                 {
                     lines[i] = new Line();
                     var line = lines[i];
-                    var start = startPoints[i].ToCanvasPosition(Canvas);
-                    var end = endPoints[i].ToCanvasPosition(Canvas);
+                    Point start;
+                    if (!IsReversed)
+                        start = startPoints[i].ToCanvasPosition(Canvas);
+                    else
+                        start = new Point(Stage.Width - startPoints[i].X, Stage.Depth - startPoints[i].Y, startPoints[i].Z).ToCanvasPosition(Canvas);
+                    Point end;
+                    if (!IsReversed)
+                        end = endPoints[i].ToCanvasPosition(Canvas);
+                    else
+                        end = new Point(Stage.Width - endPoints[i].X, Stage.Depth - endPoints[i].Y, endPoints[i].Z).ToCanvasPosition(Canvas);
                     line.X1 = start.RawX;
                     line.Y1 = start.RawY;
                     line.X2 = end.RawX;
@@ -640,7 +680,11 @@ namespace QuarterViewStageMaker
             {
                 for (var j = Math.Max(0, Math.Min(start.RawY, end.RawY)); j <= Math.Min(Stage.Depth - 1, Math.Max(start.RawY, end.RawY)); j++)
                 {
-                    var square = Stage.Squares[i, j];
+                    Square square;
+                    if (!IsReversed)
+                        square = Stage.Squares[i, j];
+                    else
+                        square = Stage.Squares[Stage.Width - i - 1, Stage.Depth - j - 1];
 
                     if (partial && _SelectedSquares.Contains(square))
                         _SelectedSquares.Remove(square);
@@ -691,7 +735,6 @@ namespace QuarterViewStageMaker
             _NowStageJson = Stage.Serialize(Stage);
 
             _RedoStack = new Stack<string>();
-            Updated = true;
 
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, _UndoStack.Count != 0, _RedoStack.Count != 0));
         }
@@ -707,8 +750,6 @@ namespace QuarterViewStageMaker
             }
             _NowStageJson = Stage.Serialize(Stage);
             _RedoStack = new Stack<string>();
-
-            Updated = false;
 
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, _UndoStack.Count != 0, _RedoStack.Count != 0));
         }
@@ -732,9 +773,6 @@ namespace QuarterViewStageMaker
             }
             DrawStage();
 
-            if (_UndoStack.Count == 0)
-                Updated = false;
-
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
         }
 
@@ -751,9 +789,23 @@ namespace QuarterViewStageMaker
             _UndoStack.Push(_NowStageJson);
 
             DrawStage();
-            Updated = true;
 
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
+        }
+
+        public void SetReverse(bool reverse)
+        {
+            IsReversed = reverse;
+
+            if (Stage == null)
+                return;
+            foreach (var square in Stage.Squares)
+                foreach (var block in square.Blocks)
+                    block.IsImageInitialized = false;
+            DrawStage();
+            UnDrawProvisionalBlocks();
+            DrawSelectedSquaresAimLine();
+            DrawAimLines(new List<Square>());
         }
 
         public enum DragMode

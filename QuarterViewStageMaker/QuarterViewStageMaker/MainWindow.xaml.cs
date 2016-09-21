@@ -57,7 +57,7 @@ namespace QuarterViewStageMaker
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (StageCanvas.Updated)
+            if (SaveStageButton.IsEnabled)
             {
                 var result = MessageBox.Show("ステージが編集されています。\n変更を保存しますか？", "確認", MessageBoxButton.YesNoCancel);
 
@@ -151,7 +151,7 @@ namespace QuarterViewStageMaker
         /// <param name="e"></param>
         private void CreateStage(object sender, EventArgs e)
         {
-            if(StageCanvas.Updated)
+            if(SaveStageButton.IsEnabled)
             {
                 var r = MessageBox.Show("ステージが編集されています。\n変更を保存しますか？", "確認", MessageBoxButton.YesNoCancel);
                 if(r == MessageBoxResult.Yes)
@@ -203,6 +203,8 @@ namespace QuarterViewStageMaker
 
             Stage.Save(Stage);
             StageBufferJson = Stage.Serialize(Stage);
+
+            SaveStageButton.IsEnabled = false;
         }
 
         /// <summary>
@@ -233,6 +235,7 @@ namespace QuarterViewStageMaker
             StageDepthUpDown.Value = Stage.Depth;
             StageDiscriptionBox.Text = Stage.Discription;
             SaveStageSettingButton.IsEnabled = false;
+            SaveStageButton.IsEnabled = false;
 
             StageCanvas.SetStage(Stage);
         }
@@ -387,7 +390,7 @@ namespace QuarterViewStageMaker
         /// <param name="e"></param>
         private void StageSelectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (StageCanvas.Updated)
+            if (SaveStageButton.IsEnabled)
             {
                 var result = MessageBox.Show("ステージが編集されています。\n変更を保存しますか？", "確認", MessageBoxButton.YesNoCancel);
 
@@ -424,6 +427,8 @@ namespace QuarterViewStageMaker
             if (Stage != null)
                 StageCanvas.Undo();
 
+            SaveStageButton.IsEnabled = true;
+
             foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
             {
                 panel.Square_PropertyChanged(this, null);
@@ -439,6 +444,8 @@ namespace QuarterViewStageMaker
         {
             if (Stage != null)
                 StageCanvas.Redo();
+
+            SaveStageButton.IsEnabled = true;
 
             foreach(SquareSettingPanel panel in SquareInformationPanelList.Children)
             {
@@ -548,6 +555,7 @@ namespace QuarterViewStageMaker
         private void StageCanvas_Edited(object sender, StageCanvas.StageEditedEventArgs e)
         {
             UndoButton.IsEnabled = e.CanUndo;
+            SaveStageButton.IsEnabled = e.CanUndo;
             RedoButton.IsEnabled = e.CanRedo;
 
             foreach (SquareSettingPanel panel in SquareInformationPanelList.Children)
@@ -577,6 +585,11 @@ namespace QuarterViewStageMaker
                 var panel = new SquareSettingPanel(square);
                 SquareInformationPanelList.Children.Add(panel);
             }
+        }
+
+        private void ReverseCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            StageCanvas.SetReverse(ReverseCheckBox.IsChecked.Value);
         }
     }
 }

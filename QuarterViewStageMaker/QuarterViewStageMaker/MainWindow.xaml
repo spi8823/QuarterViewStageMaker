@@ -157,9 +157,13 @@
                             HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,0,0,7"
                             VerticalContentAlignment="Center"
                             Click="Redo"/>
-                    <Button x:Name="SaveStageButton" Content="保存する" Width="80" Height="24" FontSize="16"
+                    <Button x:Name="SaveStageButton" Content="保存する" Width="80" Height="24" FontSize="16" IsEnabled="False"
                             HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="15,0,0,5"
                             Click="SaveStage"/>
+                    <CheckBox x:Name="ReverseCheckBox" Content="反転する" Width="80" Height="24"
+                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,2"
+                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                 Checked="ReverseCheckBox_CheckedChanged" Unchecked="ReverseCheckBox_CheckedChanged"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Vertical">
