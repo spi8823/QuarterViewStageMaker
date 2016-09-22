@@ -74,6 +74,7 @@ namespace QuarterViewStageMaker
         private List<Image> _ProvisionalImages = new List<Image>();
         private List<Line> _AimLines = new List<Line>();
         private List<Line> _SelectedSquaresAimLines = new List<Line>();
+        private List<Block> CopiedBlocks = new List<Block>();
 
         private Stack<string> _UndoStack = new Stack<string>();
         private Stack<string> _RedoStack = new Stack<string>();
@@ -357,6 +358,66 @@ namespace QuarterViewStageMaker
             }
             DrawStage();
             StageEdited();
+        }
+
+        public void CopyBlocks(int index, int height)
+        {
+            Cursor = Cursors.Wait;
+
+            CopiedBlocks = new List<Block>();
+
+            var minPoint = new Point(double.MaxValue, double.MaxValue);
+            foreach(var square in _SelectedSquares)
+            {
+                if (square.Position.X < minPoint.X)
+                    minPoint.X = square.Position.X;
+
+                if (square.Position.Y < minPoint.Y)
+                    minPoint.Y = square.Position.Y;
+            }
+
+            foreach(var square in _SelectedSquares)
+            {
+                for(var i = index;i < Math.Min(index + height, square.Blocks.Count);i++)
+                {
+                    var block = new Block(null, square.Blocks[i].Position - minPoint, square.Blocks[i].Maptip);
+                    CopiedBlocks.Add(block);
+                }
+            }
+
+            Cursor = Cursors.Arrow;
+        }
+
+        public void PasteBlocks(int index)
+        {
+            Cursor = Cursors.Wait;
+
+            var minPoint = new Point(double.MaxValue, double.MaxValue);
+            foreach (var square in _SelectedSquares)
+            {
+                if (square.Position.X < minPoint.X)
+                    minPoint.X = square.Position.X;
+
+                if (square.Position.Y < minPoint.Y)
+                    minPoint.Y = square.Position.Y;
+            }
+
+            foreach(var square in _SelectedSquares)
+            {
+                var position = square.Position - minPoint;
+                var blocks = CopiedBlocks.FindAll(block => block.Position.X == position.X && block.Position.Y == position.Y);
+                blocks.Sort((a, b) => (int)((a.Position.Z - b.Position.Z) * 10));
+
+                for(var i = 0;i < blocks.Count;i++)
+                {
+                    square.InsertBlock(blocks[i].Maptip, index + i);
+                }
+            }
+
+            DrawStage();
+            StageEdited();
+
+            Cursor = Cursors.Arrow;
         }
 
         /// <summary>

@@ -210,13 +210,22 @@
                         <StackPanel Orientation="Horizontal">
                             <ewt:ByteUpDown x:Name="InsertIndexUpDown" Value="0"/>
                             <Label Content="段目に挿入"/>
-                            <Button x:Name="InsertButton" Content="実行" Width="36"
+                            <Button x:Name="InsertButton" Content="実行" Width="36" Height="20"
                                     HorizontalAlignment="Left" Margin="5,0,0,0"
                                     Click="InsertButton_Click"/>
                         </StackPanel>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        
+                        <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                            <ewt:ByteUpDown x:Name="CopyIndexUpDown" Value="0"/>
+                            <Label Content="段目から"/>
+                            <ewt:ByteUpDown x:Name="CopyHeightUpDown" Value="1" Minimum="1"/>
+                            <Label Content="段だけコピーする"/>
+                            <Button x:Name="CopyBlocksButton" Content="実行" Width="36" Height="20" Click="CopyBlocksButton_Click" Margin="5,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                            <ewt:ByteUpDown x:Name="PasteIndexUpDown" Value="0"/>
+                            <Label Content="段目に貼り付け"/>
+                            <Button x:Name="PasteBlocksButton" Content="実行" Width="36" Height="20" Click="PasteBlocksButton_Click" Margin="5,0,0,0"/>
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Orientation="Vertical">
                         

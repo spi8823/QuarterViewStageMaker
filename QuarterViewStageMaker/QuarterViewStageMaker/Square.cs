@@ -69,8 +69,12 @@ namespace QuarterViewStageMaker
 
         public Block InsertBlock(Maptip maptip, int index)
         {
-            var block = new Block(this, new Point(Position.X, Position.Y, Blocks[Math.Min(index, Blocks.Count - 1)].Position.Z), maptip);
-            Blocks.Insert(index, block);
+            Block block;
+            if (Blocks.Count != 0)
+                block = new Block(this, new Point(Position.X, Position.Y, Blocks[Math.Min(index, Blocks.Count - 1)].Position.Z), maptip);
+            else
+                block = new Block(this, new Point(Position.X, Position.Y, 0), maptip);
+            Blocks.Insert(Math.Min(index, Blocks.Count), block);
 
             for (var i = index + 1; i < Blocks.Count; i++)
             {

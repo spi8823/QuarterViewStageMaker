@@ -596,5 +596,19 @@ namespace QuarterViewStageMaker
         {
             StageCanvas.InsertBlocks(InsertIndexUpDown.Value ?? 0);
         }
+
+        private void CopyBlocksButton_Click(object sender, RoutedEventArgs e)
+        {
+            Cursor = Cursors.Wait;
+            StageCanvas.CopyBlocks(CopyIndexUpDown.Value ?? 0, CopyHeightUpDown.Value ?? 1);
+            Cursor = Cursors.Arrow;
+        }
+
+        private void PasteBlocksButton_Click(object sender, RoutedEventArgs e)
+        {
+            Cursor = Cursors.Wait;
+            StageCanvas.PasteBlocks(PasteIndexUpDown.Value ?? 0);
+            Cursor = Cursors.Arrow;
+        }
     }
 }
