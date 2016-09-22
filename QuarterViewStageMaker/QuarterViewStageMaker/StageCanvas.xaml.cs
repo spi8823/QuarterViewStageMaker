@@ -67,6 +67,7 @@ namespace QuarterViewStageMaker
         public Stage Stage = null;
         public Maptip SelectedMaptip = null;
         public bool IsReversed { get; private set; } = false;
+        public bool IsBottomInsert;
         public bool Updated { get { return _UndoStack.Count != 0; } }
 
         private List<Square> _SelectedSquares = new List<Square>();
@@ -342,6 +343,19 @@ namespace QuarterViewStageMaker
                 }
             }
 
+            StageEdited();
+        }
+
+        public void InsertBlocks(int index)
+        {
+            if (Stage == null || SelectedMaptip == null)
+                return;
+
+            foreach (var square in _SelectedSquares)
+            {
+                var block = square.InsertBlock(SelectedMaptip, index);
+            }
+            DrawStage();
             StageEdited();
         }
 
@@ -697,7 +711,7 @@ namespace QuarterViewStageMaker
 
             RaiseEvent(new SquareSelectedEventArgs(SquareSelectedEvent, this, _SelectedSquares));
         }
-    
+
         /// <summary>
         /// 選択を解除する
         /// </summary>

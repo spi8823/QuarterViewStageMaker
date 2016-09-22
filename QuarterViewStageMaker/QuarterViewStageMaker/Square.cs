@@ -67,6 +67,19 @@ namespace QuarterViewStageMaker
             return block;
         }
 
+        public Block InsertBlock(Maptip maptip, int index)
+        {
+            var block = new Block(this, new Point(Position.X, Position.Y, Blocks[Math.Min(index, Blocks.Count - 1)].Position.Z), maptip);
+            Blocks.Insert(index, block);
+
+            for (var i = index + 1; i < Blocks.Count; i++)
+            {
+                Blocks[i].Position.Z += block.Maptip.Height;
+                Blocks[i].IsImageInitialized = false;
+            }
+            return block;
+        }
+
         public void SetDiscription(string discription)
         {
             Discription = discription;

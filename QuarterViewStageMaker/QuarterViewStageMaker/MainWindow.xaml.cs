@@ -591,5 +591,10 @@ namespace QuarterViewStageMaker
         {
             StageCanvas.SetReverse(ReverseCheckBox.IsChecked.Value);
         }
+
+        private void InsertButton_Click(object sender, RoutedEventArgs e)
+        {
+            StageCanvas.InsertBlocks(InsertIndexUpDown.Value ?? 0);
+        }
     }
 }

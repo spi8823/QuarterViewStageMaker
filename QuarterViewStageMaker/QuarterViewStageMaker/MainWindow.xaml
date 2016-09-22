@@ -205,7 +205,16 @@
                                     Click="AddTagButton_Click"/>
                         </StackPanel>
                     </StackPanel>
-
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Left" Margin="20,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <ewt:ByteUpDown x:Name="InsertIndexUpDown" Value="0"/>
+                            <Label Content="段目に挿入"/>
+                            <Button x:Name="InsertButton" Content="実行" Width="36"
+                                    HorizontalAlignment="Left" Margin="5,0,0,0"
+                                    Click="InsertButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         
                     </StackPanel>
