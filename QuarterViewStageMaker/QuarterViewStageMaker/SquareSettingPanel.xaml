@@ -39,7 +39,7 @@
             <StackPanel Orientation="Vertical" Margin="20,0,0,0">
                 <Label Content="ブロック" FontSize="16"
                    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0"/>
-                <ScrollViewer Width="150" Height="Auto" MaxHeight="140" Margin="30,5,10,10"
+                <ScrollViewer Width="150" Height="Auto" MaxHeight="515" Margin="30,5,10,10"
                 HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible"
                           HorizontalAlignment="Left" VerticalAlignment="Top">
                     <StackPanel x:Name="BlockInformationListPanel" Orientation="Vertical" Width="Auto" Height="Auto">

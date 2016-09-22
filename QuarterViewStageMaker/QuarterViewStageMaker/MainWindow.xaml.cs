@@ -579,12 +579,12 @@ namespace QuarterViewStageMaker
         private void StageCanvas_SquareSelected(object sender, StageCanvas.SquareSelectedEventArgs e)
         {
             SquareInformationPanelList.Children.Clear();
-            
-            foreach(var square in e.SelectedSquares)
-            {
-                var panel = new SquareSettingPanel(square);
-                SquareInformationPanelList.Children.Add(panel);
-            }
+
+            if (e.SelectedSquares == null || e.SelectedSquares.Count < 1)
+                return;
+            var square = e.SelectedSquares[0];
+            var panel = new SquareSettingPanel(square);
+            SquareInformationPanelList.Children.Add(panel);
         }
 
         private void StageCanvas_SelectedMaptipChanged(object sender, StageCanvas.SelectedMaptipChangedEventArgs e)
