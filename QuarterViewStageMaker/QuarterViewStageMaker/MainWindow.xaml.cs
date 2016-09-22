@@ -587,6 +587,15 @@ namespace QuarterViewStageMaker
             }
         }
 
+        private void StageCanvas_SelectedMaptipChanged(object sender, StageCanvas.SelectedMaptipChangedEventArgs e)
+        {
+            foreach(MaptipSelectButton item in MaptipListCanvas.Children)
+            {
+                if (item.Maptip == e.SelectedMaptip)
+                    item.Button_Click(null, null);
+            }
+        }
+
         private void ReverseCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
             StageCanvas.SetReverse(ReverseCheckBox.IsChecked.Value);

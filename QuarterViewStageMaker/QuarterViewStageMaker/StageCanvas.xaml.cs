@@ -25,6 +25,7 @@ namespace QuarterViewStageMaker
         #region Event
         public static readonly RoutedEvent EditedEvent = EventManager.RegisterRoutedEvent("Edited", RoutingStrategy.Bubble, typeof(EventHandler<StageEditedEventArgs>), typeof(StageCanvas));
         public static readonly RoutedEvent SquareSelectedEvent = EventManager.RegisterRoutedEvent("SquareSelected", RoutingStrategy.Bubble, typeof(EventHandler<SquareSelectedEventArgs>), typeof(StageCanvas));
+        public static readonly RoutedEvent SelectedMaptipChangedEvent = EventManager.RegisterRoutedEvent("SelectedMaptipChanged", RoutingStrategy.Bubble, typeof(EventHandler<SelectedMaptipChangedEventArgs>), typeof(StageCanvas));
 
         public event EventHandler Edited
         {
@@ -36,6 +37,12 @@ namespace QuarterViewStageMaker
         {
             add { AddHandler(SquareSelectedEvent, value); }
             remove { RemoveHandler(SquareSelectedEvent, value); }
+        }
+
+        public event EventHandler SelectedMaptipChanged
+        {
+            add { AddHandler(SelectedMaptipChangedEvent, value); }
+            remove { RemoveHandler(SelectedMaptipChangedEvent, value); }
         }
 
         public class StageEditedEventArgs : RoutedEventArgs
@@ -59,6 +66,17 @@ namespace QuarterViewStageMaker
                 :base(routedEvent, source)
             {
                 SelectedSquares = squares;
+            }
+        }
+
+        public class SelectedMaptipChangedEventArgs : RoutedEventArgs
+        {
+            public Maptip SelectedMaptip;
+
+            public SelectedMaptipChangedEventArgs(RoutedEvent routedEvent, object source, Maptip maptip)
+                :base(routedEvent, source)
+            {
+                SelectedMaptip = maptip;
             }
         }
         #endregion
@@ -205,6 +223,8 @@ namespace QuarterViewStageMaker
                     _DragMode = DragMode.PartialSelect;
                 else if ((Keyboard.GetKeyStates(Key.LeftShift) & KeyStates.Down) == KeyStates.Down)
                     _DragMode = DragMode.RegionSelect;
+                else if ((Keyboard.GetKeyStates(Key.LeftAlt) & KeyStates.Down) == KeyStates.Down)
+                    _DragMode = DragMode.Paste;
                 else
                 {
                     _DragMode = DragMode.Write;
@@ -214,9 +234,14 @@ namespace QuarterViewStageMaker
             }
             else if (e.ChangedButton == MouseButton.Right)
             {
-                _DragMode = DragMode.Delete;
-                UnselectSquares();
-                DrawAimLines(new List<Square>());
+                if ((Keyboard.GetKeyStates(Key.LeftAlt) & KeyStates.Down) == KeyStates.Down)
+                    _DragMode = DragMode.Spuit;
+                else
+                {
+                    _DragMode = DragMode.Delete;
+                    UnselectSquares();
+                    DrawAimLines(new List<Square>());
+                }
             }
             var pos = e.GetPosition(this as IInputElement);
             _DragStartPoint = new Point(pos.X, pos.Y).ToAbsolutePointFromCanvasPosition(Canvas);
@@ -233,7 +258,7 @@ namespace QuarterViewStageMaker
             if (e.LeftButton == MouseButtonState.Released && e.RightButton == MouseButtonState.Released)
                 _DragMode = DragMode.None;
 
-            if (_DragMode == DragMode.None)
+            if (_DragMode == DragMode.None || _DragMode == DragMode.Spuit || _DragMode == DragMode.Paste)
             {
                 if (Stage.DoesContainsPoint(nowPoint))
                     if (!IsReversed)
@@ -244,17 +269,7 @@ namespace QuarterViewStageMaker
                     DrawAimLines(new List<Square>());
                 return;
             }
-
-            if(_PreviousDragPoint != null && !(nowPoint.RawX == _PreviousDragPoint.RawX && nowPoint.RawY == _PreviousDragPoint.RawY))
-            {
-                if (_DragMode == DragMode.Write)
-                {
-                    UnDrawProvisionalBlocks();
-                    DrawProvisionalBlocks(_DragStartPoint, nowPoint);
-                }
-            }
-
-            if (_DragMode != DragMode.Write)
+            else if (_DragMode != DragMode.Write)
             {
                 var squares = new List<Square>();
                 for (var i = Math.Max(0, Math.Min(_DragStartPoint.RawX, nowPoint.RawX)); i <= Math.Min(Stage.Width - 1, Math.Max(_DragStartPoint.RawX, nowPoint.RawX)); i++)
@@ -268,6 +283,11 @@ namespace QuarterViewStageMaker
                     }
                 }
                 DrawAimLines(squares);
+            }
+            else if (_PreviousDragPoint != null && !(nowPoint.RawX == _PreviousDragPoint.RawX && nowPoint.RawY == _PreviousDragPoint.RawY))
+            {
+                    UnDrawProvisionalBlocks();
+                    DrawProvisionalBlocks(_DragStartPoint, nowPoint);
             }
 
             _PreviousDragPoint = nowPoint;
@@ -301,6 +321,18 @@ namespace QuarterViewStageMaker
             else if(_DragMode == DragMode.RegionSelect)
             {
                 SelectSquares(_DragStartPoint, nowPoint);
+            }
+            else if(_DragMode == DragMode.Spuit)
+            {
+                if(Stage.DoesContainsPoint(nowPoint))
+                {
+                    var square = Stage.Squares[nowPoint.RawX, nowPoint.RawY];
+                    RaiseEvent(new SelectedMaptipChangedEventArgs(SelectedMaptipChangedEvent, this, square.Blocks.Last().Maptip));
+                }
+            }
+            else if(_DragMode == DragMode.Paste)
+            {
+                PasteBlocks(nowPoint);
             }
 
             if (Stage.DoesContainsPoint(nowPoint))
@@ -411,6 +443,45 @@ namespace QuarterViewStageMaker
                 for(var i = 0;i < blocks.Count;i++)
                 {
                     square.InsertBlock(blocks[i].Maptip, index + i);
+                }
+            }
+
+            DrawStage();
+            StageEdited();
+
+            Cursor = Cursors.Arrow;
+        }
+
+        public void PasteBlocks(Point point)
+        {
+            Cursor = Cursors.Wait;
+
+            var blocksBuff = new List<Block>(CopiedBlocks);
+
+            while(0 < blocksBuff.Count)
+            {
+                var blocks = new List<Block>() { blocksBuff[0] };
+                blocksBuff.RemoveAt(0);
+
+                for(var i = blocks.Count - 1;-1 < i;i--)
+                {
+                    if(blocksBuff[i].Position.X == blocks[0].Position.X && blocksBuff[i].Position.Y == blocks[0].Position.Y)
+                    {
+                        blocks.Add(blocksBuff[i]);
+                        blocksBuff.RemoveAt(i);
+                    }
+                }
+
+                if (Stage.Width <= blocks[0].Position.X || Stage.Depth <= blocks[0].Position.Y)
+                    continue;
+
+                var square = Stage.Squares[blocks[0].Position.RawX, blocks[0].Position.RawY];
+                blocks.Sort((a, b) => (int)((a.Position.Z - b.Position.Z) * 10));
+
+                var c = square.Blocks.Count;
+                for(var i = 0;i < blocks.Count;i++)
+                {
+                    square.InsertBlock(blocks[i].Maptip, c + i);
                 }
             }
 
@@ -885,7 +956,7 @@ namespace QuarterViewStageMaker
 
         public enum DragMode
         {
-            None, PartialSelect, RegionSelect, Write, Delete, 
+            None, PartialSelect, RegionSelect, Write, Delete, Spuit, Paste
         }
     }
 }
