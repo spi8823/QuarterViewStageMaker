@@ -367,6 +367,7 @@ namespace QuarterViewStageMaker
         /// <param name="e"></param>
         private void SaveStageSettingButton_Click(object sender, EventArgs e)
         {
+            Cursor = Cursors.Wait;
             File.Delete(Stage.StageFileName);
             var stage = Stage.Deserialize(Project, StageBufferJson);
             stage.Name = StageNameBox.Text;
@@ -379,8 +380,10 @@ namespace QuarterViewStageMaker
             StageSelectComboBox.ItemsSource = Project.Stages;
             StageSelectComboBox.UpdateLayout();
             SaveStageSettingButton.IsEnabled = false;
-            //StageCanvas.StageEdited();
-            StageCanvas.DrawStage();
+            StageCanvas.StageEdited();
+            StageCanvas.DrawStage(true);
+
+            Cursor = Cursors.Arrow;
         }
 
         /// <summary>
@@ -598,12 +601,16 @@ namespace QuarterViewStageMaker
 
         private void ReverseCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
+            Cursor = Cursors.Wait;
             StageCanvas.SetReverse(ReverseCheckBox.IsChecked.Value);
+            Cursor = Cursors.Arrow;
         }
 
         private void InsertButton_Click(object sender, RoutedEventArgs e)
         {
+            Cursor = Cursors.Wait;
             StageCanvas.InsertBlocks(InsertIndexUpDown.Value ?? 0);
+            Cursor = Cursors.Arrow;
         }
 
         private void CopyBlocksButton_Click(object sender, RoutedEventArgs e)
@@ -617,6 +624,13 @@ namespace QuarterViewStageMaker
         {
             Cursor = Cursors.Wait;
             StageCanvas.PasteBlocks(PasteIndexUpDown.Value ?? 0);
+            Cursor = Cursors.Arrow;
+        }
+
+        private void MagnificationDecideButton_Click(object sender, RoutedEventArgs e)
+        {
+            Cursor = Cursors.Wait;
+            StageCanvas.SetMagnification(MagnificationUpDown.Value ?? 1);
             Cursor = Cursors.Arrow;
         }
     }

@@ -160,10 +160,18 @@
                     <Button x:Name="SaveStageButton" Content="保存する" Width="80" Height="24" FontSize="16" IsEnabled="False"
                             HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="15,0,0,5"
                             Click="SaveStage"/>
-                    <CheckBox x:Name="ReverseCheckBox" Content="反転する" Width="80" Height="24"
-                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,2"
+                    <CheckBox x:Name="ReverseCheckBox" Content="反転する" Width="100" Height="24" FontSize="18"
+                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,5"
                                  HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
                                  Checked="ReverseCheckBox_CheckedChanged" Unchecked="ReverseCheckBox_CheckedChanged"/>
+                    <Label Content="倍率" FontSize="18" Height="30"
+                           HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,5"/>
+                    <ewt:DoubleUpDown x:Name="MagnificationUpDown" Width="50" Height="28" Minimum="0.01" Maximum="10" Value="1" FontSize="18"
+                                      HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+                    <Button x:Name="MagnificationDecideButton" Content="適用" Width="40" Height="20"
+                            VerticalAlignment="Bottom" Margin="5,0,0,8"
+                            VerticalContentAlignment="Center" Padding="0"
+                            Click="MagnificationDecideButton_Click"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Vertical">

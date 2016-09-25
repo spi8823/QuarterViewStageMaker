@@ -153,6 +153,8 @@ namespace QuarterViewStageMaker
             z -= (int)X + (int)Y;
             z += Z / 100;
             z -= (X % 1.0 + Y % 1.0) / 10000;
+            z += 2000;
+            z *= 10000;
 
             return new Point(x, y, z, false);
         }
@@ -169,19 +171,19 @@ namespace QuarterViewStageMaker
             return new Point(x, y, z, true);
         }
 
-        public Point ToCanvasPosition(System.Windows.Controls.Canvas canvas)
+        public Point ToCanvasPosition(System.Windows.Controls.Canvas canvas, double magnification)
         {
             var relative = ToRelativePoint();
-            var x = relative.X + canvas.Width / 2;
-            var y = canvas.Height - StageCanvas.CanvasMargin.Height / 2 - relative.Y;
+            var x = relative.X * magnification + canvas.Width / 2;
+            var y = canvas.Height - StageCanvas.CanvasMargin.Height / 2 - relative.Y * magnification;
             return new Point(x, y, relative.Z + 100, false);
         }
 
-        public Point ToAbsolutePointFromCanvasPosition(System.Windows.Controls.Canvas canvas)
+        public Point ToAbsolutePointFromCanvasPosition(System.Windows.Controls.Canvas canvas, double magnification)
         {
             var x = X - canvas.Width / 2;
             var y = canvas.Height - StageCanvas.CanvasMargin.Height / 2 - Y;
-            return new Point(x, y, 0, false).ToAbsolutePoint();
+            return new Point(x / magnification, y / magnification, 0, false).ToAbsolutePoint();
         }
         #endregion
     }
