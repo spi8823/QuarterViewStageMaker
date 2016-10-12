@@ -323,8 +323,17 @@ namespace QuarterViewStageMaker
         /// <param name="e"></param>
         private void SaveMaptipSettingButton_Click(object sender, RoutedEventArgs e)
         {
+            var nowStage = Stage.Deserialize(Project, StageBufferJson);
+
             Project.SaveMaptipSetting(SelectedMaptip, SelectedMaptipImageNameBox.Text, double.Parse(SelectedMaptipImageHeightBox.Text));
             SaveMaptipSettingButton.IsEnabled = false;
+
+            Stage.Save(nowStage);
+            foreach(var stage in Project.Stages)
+            {
+                if (stage != Stage)
+                    Stage.Save(stage);
+            }
         }
 
         /// <summary>
