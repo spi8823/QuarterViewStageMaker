@@ -85,8 +85,6 @@ namespace QuarterViewStageMaker
         public Stage Stage = null;
         public Maptip SelectedMaptip = null;
         public bool IsReversed { get; private set; } = false;
-        public bool IsBottomInsert;
-        public bool Updated { get { return _UndoStack.Count != 0; } }
         public double Magnification { get; private set; } = 1;
 
         private List<Square> _SelectedSquares = new List<Square>();
@@ -184,6 +182,8 @@ namespace QuarterViewStageMaker
         public void AddMaptip(Block block, bool redraw = false)
         {
             var image = block.Image;
+            if (image.Parent != null)
+                (image.Parent as Canvas).Children.Remove(image);
             Canvas.Children.Add(image);
 
             if (!redraw && block.IsImageInitialized)
@@ -256,7 +256,6 @@ namespace QuarterViewStageMaker
 
             var pos = e.GetPosition(this as IInputElement);
             var nowPoint = GetRealPoint(new Point(pos.X, pos.Y).ToAbsolutePointFromCanvasPosition(Canvas, Magnification), false);
-            Console.WriteLine(nowPoint.X + ", " + nowPoint.Y);
 
             if (e.LeftButton == MouseButtonState.Released && e.RightButton == MouseButtonState.Released)
                 _DragMode = DragMode.None;
@@ -897,10 +896,10 @@ namespace QuarterViewStageMaker
         /// <summary>
         /// アンドゥする
         /// </summary>
-        public void Undo()
+        public Stage Undo()
         {
             if (_UndoStack.Count == 0)
-                return;
+                return null;
             _RedoStack.Push(_NowStageJson);
             string json = _UndoStack.Pop();
             Stage = Stage.Deserialize(Stage.Project, json);
@@ -914,15 +913,16 @@ namespace QuarterViewStageMaker
             DrawStage();
 
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
+            return Stage;
         }
 
         /// <summary>
         /// リドゥする
         /// </summary>
-        public void Redo()
+        public Stage Redo()
         {
             if (_RedoStack.Count == 0)
-                return;
+                return null;
             string json = _RedoStack.Pop();
             Stage = Stage.Deserialize(Stage.Project, json);
             _NowStageJson = json;
@@ -931,6 +931,8 @@ namespace QuarterViewStageMaker
             DrawStage();
 
             RaiseEvent(new StageEditedEventArgs(EditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
+
+            return Stage;
         }
 
         public void SetReverse(bool reverse)

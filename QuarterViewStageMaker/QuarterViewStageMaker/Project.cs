@@ -38,9 +38,10 @@ namespace QuarterViewStageMaker
         public readonly string ProjectFolder;
         public string StageFolder { get { return ProjectFolder + "\\" + "Stage"; } }
         public string MaptipFolder { get { return ProjectFolder + "\\" + "Maptip"; } }
-        public string MaptipHeightsFileName { get { return MaptipFolder + "\\MaptipHeights.json"; } }
+        public string FigureFolder { get { return ProjectFolder + "\\" + "MapObject"; } }
         public string ProjectSettingFileName { get { return ProjectFolder + "\\Setting.json"; } }
         public List<Maptip> Maptips = new List<Maptip>();
+        public List<Figure> Figures = new List<Figure>();
         public List<Stage> Stages = new List<Stage>();
         public ProjectSetting Setting { get; private set; }
 
@@ -49,16 +50,16 @@ namespace QuarterViewStageMaker
             Name = projectFolder;
 
             ProjectFolder = projectFolder;
-            if (!Directory.Exists(ProjectFolder))
-                Directory.CreateDirectory(ProjectFolder);
 
-            if (!Directory.Exists(StageFolder))
-                Directory.CreateDirectory(StageFolder);
-            if (!Directory.Exists(MaptipFolder))
-                Directory.CreateDirectory(MaptipFolder);
+            foreach(var folder in new[] { ProjectFolder, StageFolder, MaptipFolder, FigureFolder})
+            {
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+            }
 
             Setting = ProjectSetting.Load(ProjectSettingFileName);
             LoadMaptips();
+            LoadFigures();
             LoadStages();
         }
 
@@ -89,6 +90,18 @@ namespace QuarterViewStageMaker
             }
         }
 
+        public void LoadFigures()
+        {
+            Figures = new List<Figure>();
+            foreach(var filename in Directory.GetFiles(FigureFolder, "*.png"))
+            {
+                var figure = new Figure(filename);
+                if (Setting.FigureTags.ContainsKey(figure.Name))
+                    figure.SetTag(Setting.FigureTags[figure.Name]);
+                Figures.Add(figure);
+            }
+        }
+
         public Stage CreateStage(string name, int width, int depth)
         {
             int id = Stages.Count;
@@ -113,18 +126,21 @@ namespace QuarterViewStageMaker
 
             Setting.MaptipHeights.Add(name, height);
 
-            try
-            {
-                using (StreamWriter writer = new StreamWriter(MaptipHeightsFileName, false, Encoding.UTF8))
-                {
-                    var json = JsonConvert.SerializeObject(Setting.MaptipHeights, Formatting.Indented);
-                    writer.Write(json);
-                }
-            }
-            catch { }
-
             maptip.SetName(name);
             maptip.SetHeight(height);
+
+            ProjectSetting.Save(Setting, ProjectSettingFileName);
+        }
+
+        public void SaveFigureSetting(Figure figure, string name, string tag)
+        {
+            if (Setting.FigureTags.ContainsKey(figure.Name))
+                Setting.FigureTags.Remove(figure.Name);
+
+            Setting.FigureTags.Add(name, tag);
+
+            figure.SetName(name);
+            figure.SetTag(tag);
 
             ProjectSetting.Save(Setting, ProjectSettingFileName);
         }
@@ -140,6 +156,17 @@ namespace QuarterViewStageMaker
             return null;
         }
 
+        public Figure GetFigure(string name)
+        {
+            foreach(var figure in Figures)
+            {
+                if (figure.Name == name)
+                    return figure;
+            }
+
+            return null;
+        }
+
         public void ImportMaptip(string sourceFileName)
         {
             if (Path.GetExtension(sourceFileName) != ".png")
@@ -150,6 +177,17 @@ namespace QuarterViewStageMaker
 
             Maptips.Add(new Maptip(fileName));
         }
+
+        public void ImportFigure(string sourceFileName)
+        {
+            if (Path.GetExtension(sourceFileName) != ".png")
+                return;
+
+            var filename = FigureFolder + "\\" + Path.GetFileName(sourceFileName);
+            File.Copy(sourceFileName, filename, true);
+
+            Figures.Add(new Figure(filename));
+         }
 
         public void ImportSlicedMaptip(string sourceFileName)
         {
@@ -198,19 +236,17 @@ namespace QuarterViewStageMaker
         [JsonProperty("MaptipHeights")]
         public Dictionary<string, double> MaptipHeights { get; set; }
 
+        [JsonProperty("FigureTags")]
+        public Dictionary<string, string> FigureTags { get; set; }
+
         [JsonProperty("Tags")]
         public List<string> Tags { get; set; }
 
         public ProjectSetting()
         {
             MaptipHeights = new Dictionary<string, double>();
+            FigureTags = new Dictionary<string, string>();
             Tags = new List<string>();
-        }
-
-        public ProjectSetting(Dictionary<string, double> maptipheights, List<string> tags)
-        {
-            MaptipHeights = maptipheights;
-            Tags = tags;
         }
 
         public static ProjectSetting Load(string filename)

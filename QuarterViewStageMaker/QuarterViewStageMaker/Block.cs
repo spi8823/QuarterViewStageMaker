@@ -57,6 +57,7 @@ namespace QuarterViewStageMaker
 
             Image = new Image();
             Image.Source = Maptip?.Image ?? new System.Windows.Media.Imaging.BitmapImage();
+            Image.Tag = this;
         }
     }
 }

@@ -54,6 +54,9 @@ namespace QuarterViewStageMaker
         [JsonProperty("Squares")]
         public Square[,] Squares { get; private set; } = null;
 
+        [JsonProperty("MapObjects")]
+        public List<MapObject> MapObjects { get; private set; } = null;
+
         [JsonIgnore()]
         public string StageFileName { get { return Project.StageFolder + "\\" + Name + ".stage"; } }
 
@@ -69,6 +72,8 @@ namespace QuarterViewStageMaker
             for (var i = 0; i < Width; i++)
                 for (var j = 0; j < Depth; j++)
                     Squares[i, j] = new Square(this, new Point(i, j), "");
+
+            MapObjects = new List<MapObject>();
 
             ID = id;
         }
@@ -115,6 +120,7 @@ namespace QuarterViewStageMaker
 
         public static string Serialize(Stage stage)
         {
+            Console.WriteLine();
             string json = JsonConvert.SerializeObject(stage, Formatting.Indented);
 
             return json;
@@ -124,10 +130,27 @@ namespace QuarterViewStageMaker
         {
             string json = Serialize(stage);
 
-            using (StreamWriter writer = new StreamWriter(stage.StageFileName, false, Encoding.UTF8))
+            try
             {
-                writer.Write(json);
+                File.WriteAllText(stage.StageFileName, json);
             }
+            catch
+            {
+                Console.WriteLine("Stage.Save() was failed");
+                var window = new LicenseWindow();
+                window.ShowDialog();
+            }
+        }
+
+        public MapObject AddMapObject(Figure figure, Point position)
+        {
+            if (figure == null)
+                return null;
+
+            var mo = new MapObject(figure, position);
+            MapObjects.Add(mo);
+
+            return mo;
         }
 
         public static Stage Deserialize(Project project, string json)

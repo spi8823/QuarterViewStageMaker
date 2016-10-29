@@ -201,10 +201,16 @@ namespace QuarterViewStageMaker
             if (Stage == null)
                 return;
 
-            Stage.Save(Stage);
-            StageBufferJson = Stage.Serialize(Stage);
-
             SaveStageButton.IsEnabled = false;
+
+            Stage.Save(Stage);
+            var count = 0;
+            foreach(var square in Stage.Squares)
+            {
+                count += square.Blocks.Count;
+            }
+            DebugLabel.Content = count.ToString();
+            StageBufferJson = Stage.Serialize(Stage);
         }
 
         /// <summary>
@@ -437,7 +443,7 @@ namespace QuarterViewStageMaker
         private void Undo(object sender, EventArgs e)
         {
             if (Stage != null)
-                StageCanvas.Undo();
+                Stage = StageCanvas.Undo() ?? Stage;
 
             SaveStageButton.IsEnabled = true;
 
@@ -455,7 +461,7 @@ namespace QuarterViewStageMaker
         private void Redo(object sender, EventArgs e)
         {
             if (Stage != null)
-                StageCanvas.Redo();
+                Stage = StageCanvas.Redo() ?? Stage;
 
             SaveStageButton.IsEnabled = true;
 
@@ -641,6 +647,17 @@ namespace QuarterViewStageMaker
             Cursor = Cursors.Wait;
             StageCanvas.SetMagnification(MagnificationUpDown.Value ?? 1);
             Cursor = Cursors.Arrow;
+        }
+
+        private void OpenEditMapObjectWindowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Stage == null)
+                return;
+
+            StageCanvas.Canvas.Children.Clear();
+            var window = new EditMapObjectWindow(Stage);
+            window.Show();
+            //StageCanvas.DrawStage();
         }
     }
 }

@@ -1,0 +1,81 @@
+﻿<Window x:Class="QuarterViewStageMaker.EditMapObjectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuarterViewStageMaker"
+        xmlns:ewt="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="EditMapObjectWindow" Height="800" Width="1250" Loaded="Window_Loaded" Closing="Window_Closing">
+    <StackPanel Orientation="Vertical">
+        <Menu>
+            <MenuItem Header="Project">
+                <MenuItem Header="素材を読み込む" HorizontalAlignment="Left" Width="Auto" Click="ImportFigures" />
+            </MenuItem>
+            <MenuItem Header="Help"></MenuItem>
+        </Menu>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120"/>
+                <RowDefinition Height="120"/>
+                <RowDefinition Height="480"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="233"/>
+                <ColumnDefinition Width="720"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Row="2" Grid.Column="1" >
+                <Label Content="オブジェクト一覧" Width="223" Height="40" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Bottom" FontFamily="Meiryo UI" FontSize="16"/>
+                <ScrollViewer x:Name="FigureListViewer" Width="233" Height="440" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" BorderBrush="Black" BorderThickness="1">
+                    <Canvas x:Name="FigureListCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#FFBBAAAA" />
+                </ScrollViewer>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="1">
+                <StackPanel Orientation="Horizontal">
+                    <Border BorderThickness="1" BorderBrush="Black"
+                            Width="34" Height="34"
+                            Margin="10">
+                        <Image x:Name="SelectedFigureImage" Width="32" Height="32"
+                               Margin="0,0,0,0"/>
+                    </Border>
+                    <Button x:Name="SaveFigureSettingButton" Width="100" Height="20" Content="変更を保存する"
+                            VerticalAlignment="Bottom" Margin="0,0,0,10"
+                            Click="SaveFigureSettingButton_Click"/>
+                    <Button x:Name="DeleteMaptipButton" Width="36" Height="20" Content="削除"
+                            VerticalAlignment="Bottom" Margin="10,0,0,10"
+                            VerticalContentAlignment="Center"
+                            Click="DeleteFigureButton_Click"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                    <Label Content="名前" Width="50" Height="30" 
+                           HorizontalAlignment="Left" Margin="4,0,0,0"
+                           VerticalContentAlignment="Center" FontSize="16"/>
+                    <TextBox x:Name="SelectedFigureImageNameBox" Width="150" Height="24" Text="asdf"
+                             VerticalAlignment="Bottom" Margin="0,0,0,2"
+                             VerticalContentAlignment="Center" FontSize="16" MaxLines="1"
+                             TextChanged="FigureSetting_Changed"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Tag" Width="50" Height="30" FontSize="16"
+                           HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                    <ewt:MaskedTextBox x:Name="SelectedFigureImageTagBox" Width="50" Height="24" Text="1.0" Mask="0.0"
+                                       VerticalAlignment="Bottom" Margin="0,0,0,2"
+                                       VerticalContentAlignment="Center" FontSize="16" MaxLines="1"
+                                       TextChanged="FigureSetting_Changed"/>
+                </StackPanel>
+            </StackPanel>
+            <ScrollViewer Grid.Column="2" Grid.Row="2" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="Gray">
+                <local:MapObjectEditCanvas x:Name="MapObjectEditCanvas"/>
+            </ScrollViewer>
+            <StackPanel Grid.Row="0" Grid.Column="4" Grid.RowSpan="3">
+                <local:MapObjectSettingPanel x:Name="MapObjectSettingPanel"/>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</Window>
