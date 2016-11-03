@@ -375,6 +375,7 @@ namespace QuarterViewStageMaker
             foreach (var square in _SelectedSquares)
             {
                 var block = square.InsertBlock(SelectedMaptip, index);
+                AddMaptip(block);
             }
             DrawStage();
             StageEdited();
@@ -526,7 +527,7 @@ namespace QuarterViewStageMaker
         /// </summary>
         public void DeleteAllSelectedSquares()
         {
-            if (Stage == null || SelectedMaptip == null || _SelectedSquares == null)
+            if (Stage == null || _SelectedSquares == null)
                 return;
 
             var flag = false;
@@ -674,7 +675,7 @@ namespace QuarterViewStageMaker
                     if (_ProvisionalImages[i, j] != null)
                         continue;
 
-                    var drawPoint = new Point(i, j, Stage.Squares[i, j].Height).ToCanvasPosition(Canvas, Magnification);
+                    var drawPoint = GetRealPoint(new Point(i, j, Stage.Squares[i, j].Height), true).ToCanvasPosition(Canvas, Magnification);
                     var image = new Image();
                     image.Source = SelectedMaptip.Image;
                     image.Width = SelectedMaptip.ImageWidth * Magnification;
@@ -802,7 +803,7 @@ namespace QuarterViewStageMaker
                     line.MouseMove += Canvas_MouseMove;
                     line.MouseUp += Canvas_MouseUp;
                     Canvas.Children.Add(line);
-                    Panel.SetZIndex(line, 1000);
+                    Panel.SetZIndex(line, int.MaxValue);
                     _SelectedSquaresAimLines.Add(line);
                 }
             }

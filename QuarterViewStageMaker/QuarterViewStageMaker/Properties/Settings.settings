@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="ProjectFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)">stage_altair</Value>
+      <Value Profile="(Default)">NewProject</Value>
     </Setting>
   </Settings>
 </SettingsFile>

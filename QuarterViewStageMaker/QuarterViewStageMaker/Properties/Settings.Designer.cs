@@ -25,7 +25,7 @@ namespace QuarterViewStageMaker.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("stage_altair")]
+        [global::System.Configuration.DefaultSettingValueAttribute("NewProject")]
         public string ProjectFolder {
             get {
                 return ((string)(this["ProjectFolder"]));

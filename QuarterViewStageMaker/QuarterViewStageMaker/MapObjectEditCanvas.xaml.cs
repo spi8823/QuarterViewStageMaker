@@ -187,6 +187,7 @@ namespace QuarterViewStageMaker
             {
                 SelectMapObject(((Image)sender).Tag as MapObject);
                 _DragMode = DragMode.Move;
+                Console.WriteLine("Move" + GetHashCode());
             }
             else if (e.ChangedButton == MouseButton.Right)
             {
@@ -208,6 +209,17 @@ namespace QuarterViewStageMaker
             SelectMapObject(null);
         }
 
+        public void DeleteMapObject(Figure figure)
+        {
+            SelectMapObject(null);
+            foreach (var mo in Stage.MapObjects.FindAll(m => m.Figure == figure))
+            {
+                Canvas.Children.Remove(mo.Image);
+            }
+            Stage.MapObjects.RemoveAll(m => m.Figure == figure);
+            SelectMapObject(null);
+        }
+
         private void SetSize(MapObject mapObject, double magnification)
         {
             var image = mapObject.Image;
@@ -222,7 +234,7 @@ namespace QuarterViewStageMaker
             image.Height = block.Maptip.ImageHeight * Magnification;
         }
 
-        private void SetPosition(Image image, Point quarterviewPosition)
+        public void SetPosition(Image image, Point quarterviewPosition)
         {
             var drawPoint = (GetRealPoint(quarterviewPosition, true)).ToCanvasPosition(Canvas, Magnification);
             Canvas.SetLeft(image, drawPoint.X - image.Width / 2);
@@ -269,13 +281,15 @@ namespace QuarterViewStageMaker
             if(e.LeftButton == MouseButtonState.Pressed && e.RightButton == MouseButtonState.Pressed)
             {
                 _DragMode = DragMode.None;
+                Console.WriteLine("None" + GetHashCode());
                 return;
             }
 
             var pos = e.GetPosition(this as IInputElement);
             var nowPoint = GetRealPoint(new Point(pos.X, pos.Y).ToAbsolutePointFromCanvasPosition(Canvas, Magnification), false);
 
-            _DragMode = DragMode.Write;
+            if (e.LeftButton == MouseButtonState.Pressed && e.RightButton == MouseButtonState.Released)
+                _DragMode = DragMode.Write;
 
             _PreviousDragPoint = nowPoint;
         }
@@ -307,10 +321,11 @@ namespace QuarterViewStageMaker
 
             if(_DragMode == DragMode.Write)
             {
-
+                Console.WriteLine("WriteWrite!" + GetHashCode());
             }
             else if(_DragMode == DragMode.Move)
             {
+                Console.WriteLine("MoveMove!" + GetHashCode());
                 if (e.LeftButton == MouseButtonState.Pressed)
                 {
                     var mousePosition = e.GetPosition(Canvas);
@@ -325,6 +340,11 @@ namespace QuarterViewStageMaker
 
                 }
             }
+            else
+            {
+                Console.WriteLine(_DragMode.ToString() + "!" + GetHashCode());
+            }
+
 
             _PreviousDragPoint = nowPoint;
         }
@@ -405,9 +425,67 @@ namespace QuarterViewStageMaker
             }
         }
 
+        public Stage Undo()
+        {
+            if (_UndoStack.Count == 0)
+                return null;
+            _RedoStack.Push(_NowStageJson);
+            string json = _UndoStack.Pop();
+            Stage = Stage.Deserialize(Stage.Project, json);
+            _NowStageJson = json;
+
+            DrawMapObjects();
+
+            RaiseEvent(new MapObjectEditedEventArgs(MapObjectEditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
+            return Stage;
+        }
+
+        public Stage Redo()
+        {
+            if (_RedoStack.Count == 0)
+                return null;
+            string json = _RedoStack.Pop();
+            Stage = Stage.Deserialize(Stage.Project, json);
+            _NowStageJson = json;
+            _UndoStack.Push(_NowStageJson);
+
+            DrawMapObjects();
+
+            RaiseEvent(new MapObjectEditedEventArgs(MapObjectEditedEvent, this, !(_UndoStack.Count == 0), !(_RedoStack.Count == 0)));
+            return Stage;
+        }
+
+        public void SetReverse(bool reverse)
+        {
+            IsReversed = reverse;
+
+            if (Stage == null)
+                return;
+            DrawStage();
+            DrawMapObjects();
+        }
+
+        public void SetMagnification(double magnification)
+        {
+            Magnification = magnification;
+
+            if (Stage == null)
+                return;
+            DrawStage();
+            DrawMapObjects();
+        }
+
         public enum DragMode
         {
             Write, Delete, Select, Move, None
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            foreach(UIElement item in Canvas.Children)
+            {
+                Canvas.Children.Remove(item);
+            }
         }
     }
 }

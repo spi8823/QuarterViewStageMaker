@@ -4,30 +4,44 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using Newtonsoft.Json;
 
 namespace QuarterViewStageMaker
 {
+    [JsonObject()]
     public class MapObject
     {
-        public Point Position;
+        [JsonProperty("Name")]
+        public string Name { get { return Figure.Name; } }
+        [JsonProperty("Position")]
+        public Point Position { get; set; }
+        [JsonIgnore()]
         public Figure Figure;
-        public Point Size;
-        public Point Center;
-        public string Tag;
+        [JsonProperty("Tag")]
+        public string Tag { get; set; }
+        [JsonProperty("Discription")]
         public string Discription;
-        public Dictionary<string, double> Parameters;
+        [JsonProperty("Parameters")]
+        public Dictionary<string, string> Parameters;
 
+        [JsonIgnore()]
         public Image Image;
 
         public MapObject(Figure figure, Point position)
         {
             Figure = figure;
             Position = position;
-            Size = Figure.DefaultSize;
-            Center = Figure.DefaultCenter;
             Tag = figure.DefaultTag;
-            Parameters = new Dictionary<string, double>();
+            Discription = "";
+            Parameters = new Dictionary<string, string>();
 
+            Image = new Image();
+            Image.Source = Figure?.Image?.Clone() ?? new System.Windows.Media.Imaging.BitmapImage();
+            Image.Tag = this;
+        }
+
+        public void Refresh()
+        {
             Image = new Image();
             Image.Source = Figure?.Image.Clone() ?? new System.Windows.Media.Imaging.BitmapImage();
             Image.Tag = this;

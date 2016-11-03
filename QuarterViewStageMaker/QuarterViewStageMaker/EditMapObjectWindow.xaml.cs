@@ -30,6 +30,7 @@ namespace QuarterViewStageMaker
             InitializeComponent();
             Stage = stage;
             Project = stage.Project;
+            StageBufferJson = Stage.Serialize(stage);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -68,11 +69,20 @@ namespace QuarterViewStageMaker
             button.Select();
             SelectedFigure = figure;
             MapObjectEditCanvas.SelectedFigure = figure;
+            ShowFigureData(figure);
         }
 
         private void ShowFigureData(Figure figure)
         {
-
+            if (figure == null)
+            {
+                SelectedFigureImageNameBox.Text = "";
+                SelectedFigureImageTagBox.Text = "";
+                return;
+            }
+            SelectedFigureImage.Source = figure.Image.Clone();
+            SelectedFigureImageNameBox.Text = figure.Name;
+            SelectedFigureImageTagBox.Text = figure.DefaultTag;
         }
 
         private void ImportFigures(object sender, RoutedEventArgs e)
@@ -102,6 +112,10 @@ namespace QuarterViewStageMaker
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             MapObjectEditCanvas.Canvas.Children.Clear();
+            foreach(var mapObject in Stage.MapObjects)
+            {
+                mapObject.Refresh();
+            }
         }
 
         private void FigureSetting_Changed(object sender, TextChangedEventArgs e)
@@ -118,6 +132,8 @@ namespace QuarterViewStageMaker
             if (result == MessageBoxResult.No)
                 return;
 
+            MapObjectEditCanvas.DeleteMapObject(SelectedFigure);
+            MapObjectEditCanvas.SelectedFigure = null;
             Project.Figures.Remove(SelectedFigure);
             SelectedFigure.DeleteFile();
             SelectedFigure = null;
@@ -140,11 +156,66 @@ namespace QuarterViewStageMaker
             }
         }
 
-        private void MapObjectEditCanvas_MapObjectEdited(object sender, RoutedEventArgs e)
+        private void MapObjectEditCanvas_MapObjectEdited(object sender, EventArgs e)
         {
             var m = e as MapObjectEditCanvas.MapObjectEditedEventArgs;
 
             MapObjectSettingPanel.ShowDatas(MapObjectEditCanvas.SelectedMapObject);
+            SaveStageButton.IsEnabled = true;
+            RedoButton.IsEnabled = m.CanRedo;
+            UndoButton.IsEnabled = m.CanUndo;
+        }
+
+        private void Undo(object sender, RoutedEventArgs e)
+        {
+            if (Stage == null)
+                return;
+
+            Stage = MapObjectEditCanvas.Undo() ?? Stage;
+            StageBufferJson = Stage.Serialize(Stage);
+            SaveStageButton.IsEnabled = true;
+        }
+
+        private void Redo(object sender, RoutedEventArgs e)
+        {
+            if (Stage == null)
+                return;
+
+            Stage = MapObjectEditCanvas.Redo() ?? Stage;
+            StageBufferJson = Stage.Serialize(Stage);
+            SaveStageButton.IsEnabled = true;
+        }
+
+        private void SaveStage(object sender, RoutedEventArgs e)
+        {
+            if (Stage == null)
+                return;
+
+            SaveStageButton.IsEnabled = false;
+            Stage.Save(Stage);
+            StageBufferJson = Stage.Serialize(Stage);
+        }
+
+        private void ReverseCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (Stage == null)
+                return;
+
+            MapObjectEditCanvas.SetReverse(ReverseCheckBox.IsChecked.Value);
+        }
+
+        private void MagnificationDecideButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Stage == null)
+                return;
+
+            MapObjectEditCanvas.SetMagnification(MagnificationUpDown.Value ?? 1);
+        }
+
+        private void MapObjectSettingPanel_MapObjectSettingChanged(object sender, MapObjectSettingPanel.MapObjectSettingChangedEventArgs e)
+        {
+            MapObjectEditCanvas.SetPosition(e.MapObject.Image, e.MapObject.Position);
+            MapObjectEditCanvas.Edited();
         }
     }
 }

@@ -13,26 +13,24 @@ namespace QuarterViewStageMaker
         public string ImageFileName;
         public BitmapImage Image;
         public string Name;
-        public Point DefaultSize;
-        public Point DefaultCenter;
+        public string DefaultTag;
         public readonly int ImageWidth;
         public readonly int ImageHeight;
-        public string DefaultTag;
 
         public Figure(string filename)
         {
             ImageFileName = filename;
             Name = Path.GetFileNameWithoutExtension(ImageFileName);
 
-            Image = new BitmapImage(new Uri(ImageFileName));
+            Image = new BitmapImage(new Uri(ImageFileName)).Clone();
 
             ImageWidth = Image.PixelWidth;
             ImageHeight = Image.PixelHeight;
 
             var width = ImageWidth / (double)Maptip.RhombusHorizontalWidthInPixels;
             var height = ImageHeight / (double)Maptip.RhombusVerticalWidthInPixels;
-            DefaultSize = new Point(width, width, height);
-            DefaultCenter = new Point(width / 2, width / 2, height / 2);
+
+            DefaultTag = "";
         }
 
         public void SetName(string name)

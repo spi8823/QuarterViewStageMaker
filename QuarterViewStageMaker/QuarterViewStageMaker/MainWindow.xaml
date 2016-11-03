@@ -16,9 +16,9 @@
         <CommandBinding Command="Redo" Executed="Redo"/>
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Command="Undo" Key="Z"/>
-        <KeyBinding Command="Redo" Key="Y"/>
-        <KeyBinding Command="Save" Key="S"/>
+        <KeyBinding Command="Undo" Modifiers="Ctrl" Key="Z"/>
+        <KeyBinding Command="Redo" Modifiers="Ctrl" Key="Y"/>
+        <KeyBinding Command="Save" Modifiers="Ctrl" Key="S"/>
     </Window.InputBindings>
     <StackPanel Orientation="Vertical">
         <Menu x:Name="Menu" Grid.ColumnSpan="4" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Height="Auto" Width="Auto">
@@ -140,12 +140,26 @@
                     <StackPanel Orientation="Horizontal">
                         <Label Content="説明" Width="50" Height="30" FontSize="16"
                                VerticalAlignment="Top"/>
-                        <TextBox x:Name="StageDiscriptionBox" Width="400" Height="60" FontSize="14" Text=""
+                        <TextBox x:Name="StageDiscriptionBox" Width="200" Height="60" FontSize="14" Text=""
                                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,5,0,0"
                                  VerticalContentAlignment="Top"
                                  AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                  TextChanged="StageSetting_Changed"/>
                     </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="-30,45,0,0">
+                    <Label Content="パラメータ"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Margin="0,0,-18,0">
+
+                        <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Key" Width="75" BorderBrush="DarkGray" BorderThickness="2,2,1,2"/>
+                            <Label Content="Value" Width="85" BorderBrush="DarkGray" BorderThickness="1,2,2,2"/>
+                        </StackPanel>
+                        <StackPanel x:Name="StageParameterListPanel" Orientation="Vertical">
+                        </StackPanel>
+                    </StackPanel>
+                        </ScrollViewer>
                 </StackPanel>
             </StackPanel>
 

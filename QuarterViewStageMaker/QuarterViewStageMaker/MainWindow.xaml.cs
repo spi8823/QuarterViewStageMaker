@@ -22,6 +22,7 @@ namespace QuarterViewStageMaker
     /// </summary>
     public partial class MainWindow : Window
     {
+        public Config Config;
         public Project Project = null;
         public Stage Stage = null;
         public string StageBufferJson = "";
@@ -30,11 +31,12 @@ namespace QuarterViewStageMaker
         public MainWindow()
         {
             InitializeComponent();
+            Config = Config.Load();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var projectFolder = Properties.Settings.Default.ProjectFolder;
+            var projectFolder = Config.ProjectFolder;
             if(!string.IsNullOrWhiteSpace(projectFolder) && Directory.Exists(projectFolder))
             {
                 Project = new Project(projectFolder);
@@ -48,8 +50,8 @@ namespace QuarterViewStageMaker
                 Close();
             else
             {
-                Properties.Settings.Default.ProjectFolder = Project.ProjectFolder;
-                Properties.Settings.Default.Save();
+                Config.ProjectFolder = Project.ProjectFolder;
+                Config.Save(Config);
                 StageSelectComboBox.ItemsSource = Project.Stages;
                 SelectTagComboBox.ItemsSource = Project.Setting.Tags;
             }
@@ -204,12 +206,6 @@ namespace QuarterViewStageMaker
             SaveStageButton.IsEnabled = false;
 
             Stage.Save(Stage);
-            var count = 0;
-            foreach(var square in Stage.Squares)
-            {
-                count += square.Blocks.Count;
-            }
-            DebugLabel.Content = count.ToString();
             StageBufferJson = Stage.Serialize(Stage);
         }
 
@@ -242,8 +238,26 @@ namespace QuarterViewStageMaker
             StageDiscriptionBox.Text = Stage.Discription;
             SaveStageSettingButton.IsEnabled = false;
             SaveStageButton.IsEnabled = false;
+            ShowStageParameters(stage);
 
             StageCanvas.SetStage(Stage);
+        }
+
+        private void ShowStageParameters(Stage stage)
+        {
+            StageParameterListPanel.Children.Clear();
+            if (stage == null)
+                return;
+            var index = 0;
+            if (stage.Parameters != null)
+            {
+                foreach (var item in stage.Parameters)
+                {
+                    AddKeyValuePanel(item.Key, item.Value, index);
+                    index++;
+                }
+            }
+            AddKeyValuePanel("", "", index);
         }
 
         #region Maptip
@@ -387,6 +401,7 @@ namespace QuarterViewStageMaker
             var stage = Stage.Deserialize(Project, StageBufferJson);
             stage.Name = StageNameBox.Text;
             Stage.SetSize(StageWidthUpDown.Value ?? Stage.Width, StageDepthUpDown.Value ?? Stage.Depth);
+            Stage.SetParameters(GetParameters());
             Stage.Save(stage);
 
             Stage.Name = StageNameBox.Text;
@@ -399,6 +414,61 @@ namespace QuarterViewStageMaker
             StageCanvas.DrawStage(true);
 
             Cursor = Cursors.Arrow;
+        }
+
+        private void AddKeyValuePanel(string key, string value, int index)
+        {
+            var panel = new StackPanel();
+            panel.Orientation = Orientation.Horizontal;
+            var keyBox = new TextBox();
+            keyBox.Text = key;
+            keyBox.Width = 75;
+            keyBox.Tag = index;
+            keyBox.TextChanged += KeyBox_TextChanged;
+            panel.Children.Add(keyBox);
+            var valueBox = new TextBox();
+            valueBox.Text = value;
+            valueBox.Width = 85;
+            valueBox.Tag = index;
+            valueBox.TextChanged += ValueBox_TextChanged;
+            panel.Children.Add(valueBox);
+            StageParameterListPanel.Children.Add(panel);
+        }
+
+        private void ValueBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            SaveStageSettingButton.IsEnabled = true;
+        }
+
+        private Dictionary<string, string> GetParameters()
+        {
+            var parameters = new Dictionary<string, string>();
+            foreach (StackPanel panel in StageParameterListPanel.Children)
+            {
+                var keyBox = panel.Children[0] as TextBox;
+                var valueBox = panel.Children[1] as TextBox;
+                if (keyBox == null || valueBox == null)
+                    continue;
+                if (string.IsNullOrWhiteSpace(keyBox.Text))
+                    continue;
+                if (valueBox.Text == null)
+                    valueBox.Text = "";
+                if (!parameters.ContainsKey(keyBox.Text))
+                    parameters.Add(keyBox.Text, valueBox.Text);
+            }
+
+            return parameters;
+        }
+
+        private void KeyBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var keyBox = sender as TextBox;
+            var index = (int)keyBox.Tag;
+            if (!string.IsNullOrWhiteSpace(((StageParameterListPanel.Children[StageParameterListPanel.Children.Count - 1] as StackPanel).Children[0] as TextBox).Text))
+            {
+                AddKeyValuePanel("", "", index + 1);
+            }
+            SaveStageSettingButton.IsEnabled = true;
         }
 
         /// <summary>
@@ -656,8 +726,12 @@ namespace QuarterViewStageMaker
 
             StageCanvas.Canvas.Children.Clear();
             var window = new EditMapObjectWindow(Stage);
-            window.Show();
-            //StageCanvas.DrawStage();
+            window.Top = Top;
+            window.Left = Left;
+            Visibility = Visibility.Collapsed;
+            window.ShowDialog();
+            Visibility = Visibility.Visible;
+            StageCanvas.DrawStage();
         }
     }
 }

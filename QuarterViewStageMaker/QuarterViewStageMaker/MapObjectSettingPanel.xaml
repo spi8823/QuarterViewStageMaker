@@ -6,36 +6,37 @@
              xmlns:local="clr-namespace:QuarterViewStageMaker"
              xmlns:ewt="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="240">
+             d:DesignHeight="320" d:DesignWidth="240">
     <StackPanel Orientation="Vertical" Background="White">
         <Label  DataContext="{Binding Path=Name}" Height="18" FontSize="16" Padding="0" Margin="5,5,0,0"/>
         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
             <Label Content="座標" Margin="20,0,0,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Padding="0"/>
-            <ewt:DoubleUpDown x:Name="XUpDown" Width="50" Margin="5,0,0,0"/>
+            <ewt:DoubleUpDown x:Name="XUpDown" Width="50" Margin="5,0,0,0" ValueChanged="PositionUpDown_ValueChanged"/>
             <Label Content="," Margin="0,0,0,0"/>
-            <ewt:DoubleUpDown x:Name="YUpDown" Width="50" Margin="0,0,0,0"/>
+            <ewt:DoubleUpDown x:Name="YUpDown" Width="50" Margin="0,0,0,0" ValueChanged="PositionUpDown_ValueChanged"/>
             <Label Content="," Margin="0,0,0,0"/>
-            <ewt:DoubleUpDown x:Name="ZUpDown" Width="50" Margin="0,0,0,0"/>
+            <ewt:DoubleUpDown x:Name="ZUpDown" Width="50" Margin="0,0,0,0" ValueChanged="PositionUpDown_ValueChanged"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
             <Label Content="Tag" Margin="20,0,0,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Padding="0"/>
-            <TextBox x:Name="TagTextBox" Width="100" Margin="10,0,0,0"/>
+            <TextBox x:Name="TagTextBox" Width="100" Margin="10,0,0,0" TextChanged="Parameter_Changed"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
             <Label Content="説明" VerticalAlignment="Top" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Padding="0" Margin="20,0,0,0"/>
-            <TextBox x:Name="DiscriptionTextBox" Width="180" Height="60" Margin="4,0,0,0" AcceptsReturn="True" TextWrapping="Wrap"/>
+            <TextBox x:Name="DiscriptionTextBox" Width="180" Height="60" Margin="4,0,0,0" AcceptsReturn="True" TextWrapping="Wrap" TextChanged="Parameter_Changed"/>
         </StackPanel>
         <StackPanel Orientation="Vertical">
             <Label Content="パラメータ" Margin="20,10,0,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Padding="0,0,0,0"/>
-            <DataGrid x:Name="ParametersDataGrid" Width="180" Height="Auto"
-                      HorizontalAlignment="Left" VerticalAlignment="Top" Margin="47,5,0,0" 
-                      CanUserAddRows="True" CanUserResizeColumns="False" CanUserDeleteRows="True" CanUserResizeRows="False" CanUserSortColumns="False" AutoGenerateColumns="False" RowHeaderWidth="0"
-                      CellEditEnding="ParametersDataGrid_CellEditEnding">
-                <DataGrid.Columns>
-                    <DataGridTextColumn x:Name="KeyColumn" Header="Key" Width="100" Binding="{Binding Key}"/>
-                    <DataGridTextColumn x:Name="ValueColumn" Header="Value" Width="78" Binding="{Binding Value}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <StackPanel Orientation="Vertical" Margin="48,0,15,10">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Key" Width="90" FontSize="12" BorderBrush="DarkGray" BorderThickness="2,2,1,2"
+                           HorizontalContentAlignment="Left" Padding="5,2,0,3"/>
+                    <Label Content="Value" Width="87" FontSize="12" BorderBrush="DarkGray" BorderThickness="1,2,2,2"
+                           HorizontalContentAlignment="Left" Padding="5,2,0,3"/>
+                </StackPanel>
+                <StackPanel x:Name="ParameterListPanel" Orientation="Vertical">
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
     </StackPanel>
 </UserControl>

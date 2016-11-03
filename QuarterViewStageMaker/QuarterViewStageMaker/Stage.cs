@@ -46,6 +46,9 @@ namespace QuarterViewStageMaker
         [JsonProperty("Discription")]
         public string Discription { get; private set; } = "";
 
+        [JsonProperty("Parameters")]
+        public Dictionary<string, string> Parameters { get; private set; } = new Dictionary<string, string>();
+
         [JsonProperty("Width")]
         public int Width { get; private set; }
         [JsonProperty("Depth")]
@@ -108,6 +111,11 @@ namespace QuarterViewStageMaker
             Depth = depth;
         }
 
+        public void SetParameters(Dictionary<string, string> parameters)
+        {
+            Parameters = parameters;
+        }
+
         public bool DoesContainsPoint(Point point)
         {
             if (point.X < 0 || Width <= point.X)
@@ -157,6 +165,15 @@ namespace QuarterViewStageMaker
         {
             dynamic stageData = JsonConvert.DeserializeObject(json);
             var stage = new Stage(project, (string)stageData.Name.Value, (int)stageData.Width.Value, (int)stageData.Depth.Value, (int)stageData.ID.Value);
+            stage.Parameters = new Dictionary<string, string>();
+            try
+            {
+                foreach(dynamic parameter in stageData.Parameters)
+                {
+                    stage.Parameters.Add(parameter.Name, parameter.Value.Value);
+                }
+            }
+            catch { }
             foreach (dynamic squareLine in stageData.Squares)
                 foreach (dynamic squareData in squareLine)
                 {
@@ -172,6 +189,23 @@ namespace QuarterViewStageMaker
 
                     stage.Squares[square.Position.RawX, square.Position.RawY] = square;
                 }
+            try
+            {
+                foreach (dynamic mapObjectData in stageData.MapObjects)
+                {
+                    dynamic position = mapObjectData.Position;
+                    dynamic name = mapObjectData.Name;
+                    var figure = project.GetFigure((string)name.Value);
+                    var mo = stage.AddMapObject(figure, new Point((double)position.X.Value, (double)position.Y.Value, (double)position.Z.Value));
+                    foreach (dynamic keyvalue in mapObjectData.Parameters)
+                    {
+                        mo.Parameters.Add(keyvalue.Name, keyvalue.Value.Value);
+                    }
+                    mo.Tag = mapObjectData.Tag;
+                    mo.Discription = mapObjectData.Discription;
+                }
+            }
+            catch { }
 
             return stage;
         }
